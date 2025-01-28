@@ -46,7 +46,7 @@ fn main() {
     //c1.rotate_comp(90);
     
     //println!("{}",(c1.string()))
-    let brd_path = std::path::Path::new("../BeagleBone_Black.unrouted.kicad_pcb");
+    let brd_path = std::path::Path::new("../demo/demo.kicad_pcb");
     let read_result = kicad_parse_gen::read_layout(brd_path);
     let brd = read_result.unwrap();
     ()
