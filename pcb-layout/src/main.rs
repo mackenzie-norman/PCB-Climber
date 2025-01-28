@@ -39,17 +39,13 @@ impl Component{
 }
 fn main() {
     println!("Hello, world!");
-    //let mut boxx= Bbox::new(0,2,0,4);
-    //let mut c1 = Component{refdes: "C1".to_string(), bbox:boxx, rotation:0};
-    //println!("{}",(c1.string()));
-    //c1.move_comp( 10, 11);
-    //c1.rotate_comp(90);
+    let mut boxx= Bbox::new(0,2,0,4);
+    let mut c1 = Component{refdes: "C1".to_string(), bbox:boxx, rotation:0};
+    println!("{}",(c1.string()));
+    c1.move_comp( 10, 11);
+    c1.rotate_comp(90);
     
-    //println!("{}",(c1.string()))
-    let brd_path = std::path::Path::new("../demo/demo.kicad_pcb");
-    let read_result = kicad_parse_gen::read_layout(brd_path);
-    let brd = read_result.unwrap();
-    ()
+    println!("{}",(c1.string()))
     
     
 }
