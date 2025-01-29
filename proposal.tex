@@ -3,11 +3,13 @@
 \author{Mackenzie Norman}
 \begin{document}
 \maketitle
-
+\section{Project Topic}
 
 ``The rapid progress in PCB capability has been driven by a few factors, including more capable components and improved manufacturing techniques. Nevertheless, while the components have gotten smaller and faster over decades, the process of designing a PCB has not changed significantly. Until the late 1980’s, PCB designers would labor over large schematics and models for weeks if not months, trying to place components and calculate routing paths. Today, pen and paper have been replaced with highly functional Electronic Design Automation (EDA) software. Even still, most component placement and routing done today still relies on the experience and skill of the designer, just as it did 50 years ago. Through the age of automation, PCB component placement and routing remain in the technological stone age" \\
 
 PCB Layout is a very difficult problem to automate, not only is it in it's self intractable, any heuristic used to asses quality is also intractable.\\
+
+\section{Project Vision}
 
 When optimizing an arbitrary placement there are three basic constraints that must be optimized for.
 
@@ -19,7 +21,7 @@ No Overlap: some approaches to placement allow for some overlap - especially sim
 
 Most placement algoritihims combine these into one all encompassing heuristic - which is the initial approach our GA based placer will take. However if time allows for implementing PSA/MOSA these metrics will create a pareto front of which all points are considered "valid". 
 
-\noindent Measurable - Steps: 
+\subsection{Measurable - Steps }
 
 \noindent\textbf{Must Achieve}
 \begin{itemize}
@@ -36,11 +38,13 @@ Most placement algoritihims combine these into one all encompassing heuristic - 
     \item Add concurrent/multithreaded support to our SA 
 \end{itemize}
 
-\noindent\textbf{Probably won't complete but someday would like to}
+\noindent\textbf{Looking Forward}
 \begin{itemize}
     \item improve upon operators and try other simulated annealing based approaches
-    \item implement a better wire length calculation (maybe A*)
+    \item implement a better wire length calculation (maybe A*?)
 \end{itemize}
 
+\section{Concerns}
+Pretty minimal concern in terms of my initial scope, I am unsure if it makes sense to use the genome representation as described in the paper. I also am not sure how exactly I plan to set up the GA for concurrent processing. 
 
 \end{document}
