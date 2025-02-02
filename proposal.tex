@@ -33,11 +33,11 @@ When optimizing an arbitrary placement there are three basic constraints that mu
 
 Placement area: either in the form of a bounding box or (depending on computing expense) the convex-hull of the placement. 
 
-Net Length: By far the most important optimization metric - traditional metrics are Half Perimiter Wire Length (HPWL), this is a holdover from VLSI design (as is most of the research) or some combination of manhattan or euclidean distance. It is currently seen as infeasible to use an auto-router to asses wire length
+Net Length: By far the most important optimization metric - traditional metrics are Half Perimeter Wire Length (HPWL), this is a holdover from VLSI design (as is most of the research) or some combination of manhattan or euclidean distance. It is currently seen as infeasible to use an auto-router to asses wire length
 
-No Overlap: some approaches to placement allow for some overlap - especially simulated-annealing based ones. The electrostatic VLSI placer - rePlacer allows for overlap at the beginning. The operators we plan to implent cannot create a placement with overlap. This will ensure all generated placements are valid. 
+No Overlap: some approaches to placement allow for some overlap - especially simulated-annealing based ones. The electrostatic VLSI placer - rePlacer allows for overlap at the beginning. The operators we plan to implement cannot create a placement with overlap. This will ensure all generated placements are valid. 
 
-Most placement algoritihims combine these into one all encompassing heuristic - which is the initial approach our GA based placer will take. However if time allows for implementing PSA/MOSA these metrics will create a pareto front of which all points are considered "valid". 
+Most placement algorithms combine these into one all encompassing heuristic - which is the initial approach our GA based placer will take. However if time allows for implementing PSA/MOSA these metrics will create a Pareto front of which all points are considered "valid". 
 
 \textbf{Note:} since the paper is paywalled I summarized it in GA breakdown.pdf
 \subsection{Measurable - Steps }
@@ -46,15 +46,15 @@ Most placement algoritihims combine these into one all encompassing heuristic - 
 \begin{itemize}
 
     \item Implement GA PCB using operations from paper. 
-    \item Add concurrent/multithreaded support
-    \item Ability to parse kicad input and output to kicad (this ideally will be handled via a crate but haven't tried it yet)
+    \item Add concurrent/multi-threaded support
+    \item Ability to parse Kicad input and output to Kicad (this ideally will be handled via a crate but haven't tried it yet)
 \end{itemize}
 
 
 \noindent\textbf{Stretch}
 \begin{itemize}
     \item Utilizing mutations created above, implement PSA/MOSA 
-    \item Add concurrent/multithreaded support to our SA 
+    \item Add concurrent/multi-threaded support to our SA 
 \end{itemize}
 
 \noindent\textbf{Looking Forward}
