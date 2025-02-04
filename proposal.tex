@@ -23,9 +23,9 @@
 \maketitle
 \section{Project Topic}
 
-``The rapid progress in PCB capability has been driven by a few factors, including more capable components and improved manufacturing techniques. Nevertheless, while the components have gotten smaller and faster over decades, the process of designing a PCB has not changed significantly. Until the late 1980’s, PCB designers would labor over large schematics and models for weeks if not months, trying to place components and calculate routing paths. Today, pen and paper have been replaced with highly functional Electronic Design Automation (EDA) software. Even still, most component placement and routing done today still relies on the experience and skill of the designer, just as it did 50 years ago. Through the age of automation, PCB component placement and routing remain in the technological stone age" \\
+``The rapid progress in PCB capability has been driven by a few factors, including more capable components and improved manufacturing techniques. Nevertheless, while the components have gotten smaller and faster over decades, the process of designing a PCB has not changed significantly. Until the late 1980’s, PCB designers would labor over large schematics and models for weeks if not months, trying to place components and calculate routing paths. Today, pen and paper have been replaced with highly functional Electronic Design Automation (EDA) software. Even still, most component placement and routing done today still relies on the experience and skill of the designer, just as it did 50 years ago. Through the age of automation, PCB component placement and routing remain in the technological stone age" [Crocker]\\
 
-PCB Layout is a very difficult problem to automate, not only is it in it's self intractable, any heuristic used to asses quality is also intractable.\\
+PCB Layout - done optimally - is pretty hard. Actually nearly impossible, especially as layouts and components get smaller and routing gets more complex.  \\
 
 \section{Project Vision}
 
@@ -42,10 +42,14 @@ Most placement algorithms combine these into one all encompassing heuristic - wh
 \textbf{Note:} since the paper is paywalled I summarized it in GA breakdown.pdf
 \subsection{Measurable - Steps }
 
-\noindent\textbf{Must Achieve}
+\noindent\textbf{Minimum}
 \begin{itemize}
+    \item Implement GA using operations from GA\textunderscore breakdown.pdf  
+\end{itemize}
 
-    \item Implement GA PCB using operations from paper. 
+
+\noindent\textbf{Should Achieve (Would be dissapointed if not)}
+\begin{itemize}
     \item Add concurrent/multi-threaded support
     \item Ability to parse Kicad input and output to Kicad (this ideally will be handled via a crate but haven't tried it yet)
 \end{itemize}
@@ -65,5 +69,8 @@ Most placement algorithms combine these into one all encompassing heuristic - wh
 
 \section{Concerns}
 Pretty minimal concern in terms of my initial scope, I am unsure if it makes sense to use the genome representation as described in the paper. I also am not sure how exactly I plan to set up the GA for concurrent processing. 
+\pagebreak
+\section{Citations}
 
+Crocker, Peter, https://dspace.mit.edu/bitstream/handle/1721.1/139247/Crocker-pcrocker-meng-eecs-2021-thesis.pdf?sequence=1&isAllowed=y 
 \end{document}

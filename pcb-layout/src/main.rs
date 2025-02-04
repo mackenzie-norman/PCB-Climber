@@ -22,6 +22,22 @@ struct Component{
     bbox: Bbox,
     rotation: i32,
 }
+struct Individual{
+    chromosone :  Vec<Vec<usize>>,
+    comp_list: Vec<Component>,
+    discretization: f32,
+}
+impl Individual{
+    fn new(self, pl: Placement) -> Self{
+        //For now lets just say its a 6 x 6
+        
+        self.chromosone = 
+       self 
+    }
+    fn to_tex(&self) {
+
+    }
+}
 impl Component{
     fn string(&self) -> String{
         return  self.refdes.clone() + " at (" + &self.bbox.centerx.to_string()  +"," + &self.bbox.centery.to_string() + ")";
