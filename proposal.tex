@@ -22,10 +22,16 @@
 \begin{document}
 \maketitle
 \section{Project Topic}
+For my term project I hope to implement an early genetic algorithm used to generate rudimentary layouts for Printed Circuit Boards. This was described in the paper by Jain (see citations)  
 
+\textbf{Note:} since the paper is paywalled I summarized it in GA\textunderscore breakdown.pdf
+
+My reason for wanting to do this is summarized well in this qoute: (I also just think it seems fun, I implemented this in python but it was pretty rudimentary and very slow)
 ``The rapid progress in PCB capability has been driven by a few factors, including more capable components and improved manufacturing techniques. Nevertheless, while the components have gotten smaller and faster over decades, the process of designing a PCB has not changed significantly. Until the late 1980’s, PCB designers would labor over large schematics and models for weeks if not months, trying to place components and calculate routing paths. Today, pen and paper have been replaced with highly functional Electronic Design Automation (EDA) software. Even still, most component placement and routing done today still relies on the experience and skill of the designer, just as it did 50 years ago. Through the age of automation, PCB component placement and routing remain in the technological stone age" [Crocker]\\
 
 PCB Layout - done optimally - is pretty hard. Actually nearly impossible, especially as layouts and components get smaller and routing gets more complex.  \\
+
+
 
 \section{Project Vision}
 
@@ -39,7 +45,6 @@ No Overlap: some approaches to placement allow for some overlap - especially sim
 
 Most placement algorithms combine these into one all encompassing heuristic - which is the initial approach our GA based placer will take. However if time allows for implementing PSA/MOSA these metrics will create a Pareto front of which all points are considered "valid". 
 
-\textbf{Note:} since the paper is paywalled I summarized it in GA breakdown.pdf
 \subsection{Measurable - Steps }
 
 \noindent\textbf{Minimum}
@@ -73,4 +78,5 @@ Pretty minimal concern in terms of my initial scope, I am unsure if it makes sen
 \section{Citations}
 
 Crocker, Peter, https://dspace.mit.edu/bitstream/handle/1721.1/139247/Crocker-pcrocker-meng-eecs-2021-thesis.pdf?sequence=1&isAllowed=y 
+Jain, Sait, https://asmedigitalcollection.asme.org/electronicpackaging/article-abstract/118/1/11/404553/PCB-Layout-Design-Using-a-Genetic-Algorithm?redirectedFrom=fulltext
 \end{document}
