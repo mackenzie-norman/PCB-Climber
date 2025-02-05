@@ -1,3 +1,5 @@
+use std::{collections::BTreeMap, vec};
+
 struct Bbox{
     x1:i32,
     x2:i32,
@@ -10,6 +12,14 @@ struct Bbox{
 impl Bbox{
     fn new(x1:i32 ,x2:i32 ,y1:i32 ,y2:i32 ) -> Bbox{
         Bbox { x1: x1, x2: x2, y1: y1, y2: y2, centerx: (x1-x2).abs() / 2, centery: (y1-y2).abs()/2 }
+    }
+    fn get_width(&self) -> usize{
+        return (self.x1-self.x2).unsigned_abs().try_into().unwrap()
+
+    }
+    fn get_height(&self) -> usize{
+        return (self.y1-self.y2).unsigned_abs().try_into().unwrap()
+        
     }
 }
 struct Placement{
@@ -28,14 +38,34 @@ struct Individual{
     discretization: f32,
 }
 impl Individual{
-    fn new(self, pl: Placement) -> Self{
+    fn new( pl: Placement) -> Self{
         //For now lets just say its a 6 x 6
-        
-        self.chromosone = 
-       self 
+        let mut sizes = Vec::new();
+        for a in pl.components{
+            sizes.push(a.get_height());
+            sizes.push(a.get_width());
+        }
+
+        let mut a:BTreeMap<(usize, usize), usize > = BTreeMap::new();
+        a.insert((1,2), 1) ;
+        let mut csone_vec = Vec::new();
+        for y in 0..6{
+            let mut t_v = Vec::new();
+            for x in 0..6{
+                let coords : (usize,usize) = (x,y);
+                match a.get(&coords) {
+                    Some(val) =>  t_v.push(*val),
+                    None => t_v.push(0)
+                }
+            }
+            csone_vec.insert(0,t_v)
+        }
+        Individual{chromosone: csone_vec, comp_list: Vec::new(), discretization: 1.0}
     }
     fn to_tex(&self) {
-
+       for i in &self.chromosone{
+        println!("{:?}", i);
+       } 
     }
 }
 impl Component{
@@ -51,6 +81,12 @@ impl Component{
     fn rotate_comp(& mut self, delta: i32){
         self.rotation += delta;
     }
+    fn get_width(&self) -> usize{
+        return self.bbox.get_width()
+    }
+    fn get_height(&self) -> usize{
+        return self.bbox.get_height()
+    }
 
 }
 fn main() {
@@ -60,7 +96,12 @@ fn main() {
     println!("{}",(c1.string()));
     c1.move_comp( 10, 11);
     c1.rotate_comp(90);
+    let comps:Vec<Component> = Vec::new();
     
+
+    let pl = Placement{components: comps };
+    let mut id = Individual::new(pl);
+    id.to_tex();
     println!("{}",(c1.string()))
     
     
