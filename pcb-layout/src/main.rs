@@ -37,24 +37,23 @@ impl Bbox{
     }
     fn as_btree(&self, disc:i32, value:usize) -> BTreeMap<(usize, usize), usize> {
         let mut ret_btree: BTreeMap <(usize,usize), usize> = BTreeMap::new();
-        let start_x = self.x1;
-        let start_y = self.y1;
-        let end_x = self.x2;
-        let end_y = self.y2;
+        let start_x = self.x1/disc;
+        let start_y = self.y1/disc;
+        let end_x = self.x2/disc;
+        let end_y = self.y2/disc;
         let mut cur_x = start_x;
         let mut cur_y = start_y;
-        while cur_x <=  end_x{
-            while cur_y <= end_y{
+        while cur_x <  end_x{
+            while cur_y < end_y{
                 let tmp_dict = (cur_x.try_into().unwrap(), cur_y.try_into().unwrap());
                 ret_btree.insert(tmp_dict, value);
-                cur_y += disc;
+                cur_y += 1;
             }
-            cur_x += disc;
+            cur_x += 1;
             cur_y = start_y;
 
         }
         
-        println!("{:?}", ret_btree);
         ret_btree
     }
 }
@@ -85,20 +84,18 @@ impl Individual{
         let disc = gcd_of_vector(&sizes);
 
         let mut a:BTreeMap<(usize, usize), usize > = BTreeMap::new();
+        let mut count: usize = 1;
         for c in pl.components{
-            let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), 1);
-            println!("{:?}", c_space);
+            let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), count);
             a.append(&mut c_space);
-            let st = c.bbox.x1;
-            let end = c.bbox.x2;
+            count += 1usize;
         }
-        println!("{:?}", a);
         
         let mut csone_vec = Vec::new();
 
-        for y in 0..6{
+        for y in 0..12{
             let mut t_v = Vec::new();
-            for x in 0..6{
+            for x in 0..12{
                 let coords : (usize,usize) = (x,y);
                 match a.get(&coords) {
                     Some(val) =>  t_v.push(*val),
@@ -137,15 +134,15 @@ impl Component{
 
 }
 fn main() {
-    println!("Hello, world!");
     let mut boxx= Bbox::new(0,2,0,4);
     let mut c1 = Component{refdes: "C1".to_string(), bbox:boxx, rotation:0};
-    println!("{}",(c1.string()));
+    let mut box2= Bbox::new(4,8,6,8);
+    let mut c2 = Component{refdes: "C2".to_string(), bbox:box2, rotation:0};
+    let mut box3= Bbox::new(4,11,0,6);
+    let mut c3 = Component{refdes: "C3".to_string(), bbox:box3, rotation:0};
     //c1.move_comp( 10, 11);
     //c1.rotate_comp(90);
-    let mut comps:Vec<Component> = Vec::new();
-    comps.push(c1);
-
+    let mut comps:Vec<Component> = vec![c1,c2,c3];
     let pl = Placement{components: comps };
     let mut id = Individual::new(pl);
     id.to_tex();
