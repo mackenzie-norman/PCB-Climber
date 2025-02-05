@@ -1,13 +1,13 @@
-use std::{collections::BTreeMap, vec};
-use num::integer::lcm;
+use std::{collections::{btree_map, BTreeMap}, vec};
+use num::integer::gcd;
 //CHAT GPT CODE JUST TO TEST
-fn lcm_of_vector(nums: &[usize]) -> usize {
+fn gcd_of_vector(nums: &[usize]) -> usize {
 
     let mut result = nums[0]; // Initialize with the first element
 
     for num in nums.iter().skip(1) {
 
-        result = lcm(result, *num); // Calculate LCM for each pair
+        result = gcd(result, *num); // Calculate LCM for each pair
 
     }
 
@@ -35,6 +35,28 @@ impl Bbox{
         return (self.y1-self.y2).unsigned_abs().try_into().unwrap()
         
     }
+    fn as_btree(&self, disc:i32, value:usize) -> BTreeMap<(usize, usize), usize> {
+        let mut ret_btree: BTreeMap <(usize,usize), usize> = BTreeMap::new();
+        let start_x = self.x1;
+        let start_y = self.y1;
+        let end_x = self.x2;
+        let end_y = self.y2;
+        let mut cur_x = start_x;
+        let mut cur_y = start_y;
+        while cur_x <=  end_x{
+            while cur_y <= end_y{
+                let tmp_dict = (cur_x.try_into().unwrap(), cur_y.try_into().unwrap());
+                ret_btree.insert(tmp_dict, value);
+                cur_y += disc;
+            }
+            cur_x += disc;
+            cur_y = start_y;
+
+        }
+        
+        println!("{:?}", ret_btree);
+        ret_btree
+    }
 }
 struct Placement{
     components : Vec<Component>,
@@ -49,25 +71,31 @@ struct Component{
 struct Individual{
     chromosone :  Vec<Vec<usize>>,
     comp_list: Vec<Component>,
-    discretization: f32,
+    discretization: usize,
 }
 impl Individual{
     fn new( pl: Placement) -> Self{
         //For now lets just say its a 6 x 6
         let mut sizes = Vec::new();
-        for a in pl.components{
+        for a in &pl.components{
             sizes.push(a.get_height());
             sizes.push(a.get_width());
         }
         //println!("{:?}", sizes);
-        let disc = lcm_of_vector(&sizes);
+        let disc = gcd_of_vector(&sizes);
 
         let mut a:BTreeMap<(usize, usize), usize > = BTreeMap::new();
         for c in pl.components{
+            let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), 1);
+            println!("{:?}", c_space);
+            a.append(&mut c_space);
             let st = c.bbox.x1;
             let end = c.bbox.x2;
         }
+        println!("{:?}", a);
+        
         let mut csone_vec = Vec::new();
+
         for y in 0..6{
             let mut t_v = Vec::new();
             for x in 0..6{
