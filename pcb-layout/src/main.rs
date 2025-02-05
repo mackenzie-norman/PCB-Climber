@@ -1,5 +1,19 @@
 use std::{collections::BTreeMap, vec};
+use num::integer::lcm;
+//CHAT GPT CODE JUST TO TEST
+fn lcm_of_vector(nums: &[usize]) -> usize {
 
+    let mut result = nums[0]; // Initialize with the first element
+
+    for num in nums.iter().skip(1) {
+
+        result = lcm(result, *num); // Calculate LCM for each pair
+
+    }
+
+    result
+
+}
 struct Bbox{
     x1:i32,
     x2:i32,
@@ -45,9 +59,14 @@ impl Individual{
             sizes.push(a.get_height());
             sizes.push(a.get_width());
         }
+        //println!("{:?}", sizes);
+        let disc = lcm_of_vector(&sizes);
 
         let mut a:BTreeMap<(usize, usize), usize > = BTreeMap::new();
-        a.insert((1,2), 1) ;
+        for c in pl.components{
+            let st = c.bbox.x1;
+            let end = c.bbox.x2;
+        }
         let mut csone_vec = Vec::new();
         for y in 0..6{
             let mut t_v = Vec::new();
@@ -60,7 +79,7 @@ impl Individual{
             }
             csone_vec.insert(0,t_v)
         }
-        Individual{chromosone: csone_vec, comp_list: Vec::new(), discretization: 1.0}
+        Individual{chromosone: csone_vec, comp_list: Vec::new(), discretization: disc}
     }
     fn to_tex(&self) {
        for i in &self.chromosone{
@@ -94,15 +113,15 @@ fn main() {
     let mut boxx= Bbox::new(0,2,0,4);
     let mut c1 = Component{refdes: "C1".to_string(), bbox:boxx, rotation:0};
     println!("{}",(c1.string()));
-    c1.move_comp( 10, 11);
-    c1.rotate_comp(90);
-    let comps:Vec<Component> = Vec::new();
-    
+    //c1.move_comp( 10, 11);
+    //c1.rotate_comp(90);
+    let mut comps:Vec<Component> = Vec::new();
+    comps.push(c1);
 
     let pl = Placement{components: comps };
     let mut id = Individual::new(pl);
     id.to_tex();
-    println!("{}",(c1.string()))
+    //println!("{}",(c1.string()))
     
     
 }
