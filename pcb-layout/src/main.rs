@@ -14,6 +14,7 @@ fn gcd_of_vector(nums: &[usize]) -> usize {
     result
 
 }
+#[derive(Debug)]
 struct Bbox{
     x1:i32,
     x2:i32,
@@ -62,6 +63,7 @@ struct Placement{
     placement_area: Bbox
     
 }
+#[derive(Debug)]
 struct Component{
     refdes : String,
     bbox: Bbox,
@@ -113,7 +115,23 @@ impl Individual{
         println!("{:?}", i);
        } 
     }
-
+    fn is_valid(&self) -> bool{
+        let mut valid: bool = true;
+        let mut a:BTreeMap<(usize, usize), usize > = BTreeMap::new();
+        let mut count: usize = 1;
+        println!("{:?}", self.comp_list);
+        for c in &self.comp_list{
+            let mut c_space = (*c).bbox.as_btree(self.discretization.try_into().unwrap(), count);
+            a.append(&mut c_space);
+            count += 1usize;
+        }
+        println!("{:?}", a);
+        for k in a.iter(){
+            let x = k.0.0 ;
+            println!("{}",x);
+        }
+        valid 
+    }
 }
 
 fn swap(i:Individual) -> Individual{
@@ -157,6 +175,10 @@ fn main() {
     let pl = Placement{components: comps, placement_area: placement_area };
     let mut id = Individual::new(pl);
     id.to_tex();
+    let x = id.is_valid();
+    if x {
+        id.to_tex();
+    }
     //println!("{}",(c1.string()))
     
     
