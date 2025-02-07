@@ -34,7 +34,7 @@ impl Individual{
 
         let mut a:BTreeMap<(usize, usize), usize > = BTreeMap::new();
         let mut count: usize = 1;
-        for c in pl.components{
+        for c in &pl.components{
             let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), count);
             a.append(&mut c_space);
             count += 1usize;
@@ -53,39 +53,44 @@ impl Individual{
                     None => t_v.push(0)
                 }
             }
-            csone_vec.insert(0,t_v)
+            csone_vec.push(t_v)
         }
-        Individual{chromosone: csone_vec, comp_list: Vec::new(), discretization: disc}
+        Individual{chromosone: csone_vec, comp_list: pl.components, discretization: disc}
     }
     fn to_tex(&self) {
        for i in &self.chromosone{
         println!("{:?}", i);
        } 
     }
+
     fn is_valid(&self) -> bool{
         let mut valid: bool = true;
         let mut a:BTreeMap<(usize, usize), usize > = BTreeMap::new();
         let mut count: usize = 1;
-        println!("{:?}", self.comp_list);
+        
         for c in &self.comp_list{
             let mut c_space = (*c).bbox.as_btree(self.discretization.try_into().unwrap(), count);
             a.append(&mut c_space);
             count += 1usize;
         }
-        println!("{:?}", a);
         for k in a.iter(){
             let x = k.0.0 ;
-            println!("{}",x);
+            let y = k.0.1 ;
+            let val = k.1;
+            let try_val = self.chromosone[y][x];
+            if *val != try_val{
+                return false;
+            }
         }
         valid 
     }
 }
 
-fn swap(i:Individual) -> Individual{
+fn swap(&self) {
     let a: usize = 1;
     let b: usize = 2; 
-
-    i
+    
+    
 }
 
 fn main() {
