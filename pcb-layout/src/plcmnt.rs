@@ -74,5 +74,10 @@ impl Component{
     pub fn get_height(&self) -> usize{
         return self.bbox.get_height()
     }
+    pub fn move_to(&mut self,x:i32 ,y:i32){
+        let delta_x = self.bbox.x1 - x;
+        let delta_y = self.bbox.y1 - y;
+        self.move_comp(delta_x, delta_y);
+    }
 
 }

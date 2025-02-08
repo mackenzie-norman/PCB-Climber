@@ -58,7 +58,7 @@ impl Individual{
         Individual{chromosone: csone_vec, comp_list: pl.components, discretization: disc}
     }
     fn to_tex(&self) {
-       for i in &self.chromosone{
+       for i in (&self.chromosone).into_iter().rev(){
         println!("{:?}", i);
        } 
     }
@@ -84,14 +84,71 @@ impl Individual{
         }
         valid 
     }
+    /* 
+    fn get_locs(&self, search_val: usize) -> Vec<(usize,usize)>{
+        let ret_v = Vec::new();
+        let mut y: usize = 0;
+        let mut x: usize = 0;
+        while y <= self.chromosone.len(){
+            y += 1;
+            while x <= self.chromosone[y].len(){
+                if self.chromosone[y][x] == search_val{
+                    self.chromosone
+                }
+            }
+
+        }
+    }
+    */
+    fn swap(&mut self) {
+        let a: usize = 1;
+        let b: usize = 2; 
+        let mut old_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
+        let mut new_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
+
+        {
+            let mut a_comp = &mut (self.comp_list[a-1]);
+            let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+            old_coords.append(&mut c_space);
+        }
+        
+        let mut b_comp = &mut (self.comp_list[b-1]);
+        let mut c_space = (b_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+        old_coords.append(&mut c_space);
+        let mut old_a_loc = (0,0);
+        {
+            let mut a_comp = &mut (self.comp_list[a-1]);
+            old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
+            a_comp.move_to(b_comp.bbox.x1, b_comp.bbox.y1);
+            let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+            new_coords.append(&mut c_space);
+
+        }
+        b_comp.move_to(old_a_loc.0, old_a_loc.1);
+
+        let mut c_space = (b_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+        new_coords.append(&mut c_space);
+        for k in old_coords.iter(){
+            let x = k.0.0 ;
+            let y = k.0.1 ;
+            let val = k.1;
+            let try_val = self.chromosone[y][x];
+        }
+        for k in new_coords.iter(){
+            let x = k.0.0 ;
+            let y = k.0.1 ;
+            let val = k.1;
+            let try_val = self.chromosone[y][x];
+        }
+
+        
+
+
+
+    
+    }
 }
 
-fn swap(&self) {
-    let a: usize = 1;
-    let b: usize = 2; 
-    
-    
-}
 
 fn main() {
     let placement_area = Bbox::new(0, 24, 0, 24);
@@ -106,8 +163,9 @@ fn main() {
     let  comps:Vec<Component> = vec![c1,c2,c3];
     let pl = Placement{components: comps, placement_area: placement_area };
     let mut id = Individual::new(pl);
-    id.to_tex();
+    //id.to_tex();
     let x = id.is_valid();
+    id.swap();
     if x {
         id.to_tex();
     }
