@@ -101,12 +101,12 @@ impl Individual{
     }
     */
     fn swap(&mut self) {
-        let a: usize = 2;
+        let a: usize = 1;
         let b: usize = 3; 
         let mut old_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
         let mut new_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
 
-        
+        //We need to zero, so lets grab the coords and also hold on to them 
         let a_comp = &(self.comp_list[a-1]);
         let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
         let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
@@ -117,12 +117,13 @@ impl Individual{
         let old_b_loc = (b_comp.bbox.x1, b_comp.bbox.y1);
         old_coords.append(&mut c_space);
         
-
+        //Now we want to swap locations
         let mut a_comp = &mut (self.comp_list[a-1]);
         a_comp.move_to(old_b_loc.0, old_b_loc.1);
         let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), a);
         new_coords.append(&mut c_space);
-        //Might need scoping?? 
+
+
         let mut  b_comp = &mut (self.comp_list[b-1]);        
         b_comp.move_to(old_a_loc.0, old_a_loc.1);
         let mut c_space = (b_comp).bbox.as_btree(self.discretization.try_into().unwrap(), b);
@@ -139,12 +140,38 @@ impl Individual{
             let val = k.1;
             self.chromosone[y][x] = *val;
         }
-
+        
         
 
 
 
     
+    }
+    fn rotate(& mut self){
+        let mut old_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
+        let mut new_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
+
+        //We need to zero, so lets grab the coords and also hold on to them 
+        let a: usize = 1;
+        let mut a_comp = &mut (self.comp_list[a-1]);
+        let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+        let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
+        a_comp.rotate_comp(90);
+        let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), a);
+        new_coords.append(&mut c_space);
+        for k in old_coords.iter(){
+            let x = k.0.0 ;
+            let y = k.0.1 ;
+            let val = k.1;
+            self.chromosone[y][x] = *val;
+        }
+        for k in new_coords.iter(){
+            let x = k.0.0 ;
+            let y = k.0.1 ;
+            let val = k.1;
+            self.chromosone[y][x] = *val;
+        }
+
     }
 }
 
@@ -163,8 +190,9 @@ fn main() {
     let pl = Placement{components: comps, placement_area: placement_area };
     let mut id = Individual::new(pl);
     //id.to_tex();
+    //id.swap();
+    id.rotate();
     let x = id.is_valid();
-    id.swap();
     if x {
         id.to_tex();
     }

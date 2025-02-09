@@ -42,6 +42,32 @@ impl Bbox{
         }
         ret_btree
     }
+    /// Rotates around the x1,y1 to avoid nasty discretization issues. 
+    pub fn rotate(&mut self, angle: i32 ){
+        match angle{
+            90 => 
+            {
+                let old_x = self.x2;
+                self.x2 = self.y2;
+                self.y2 = old_x;
+            },
+            180 => 
+            {
+                let old_x = self.x2;
+                self.x2 = self.y2;
+                self.y2 = old_x;
+            },
+
+
+            270 =>
+            {
+                let old_x = self.x2;
+                self.x2 = self.y2;
+                self.y2 = old_x;
+            }
+            _ => (),
+        }
+    }
 }
 pub struct Placement{
     pub components : Vec<Component>,
@@ -66,6 +92,7 @@ impl Component{
     }
     pub fn rotate_comp(& mut self, delta: i32){
         self.rotation += delta;
+        self.bbox.rotate(delta);
     }
     pub fn get_width(&self) -> usize{
         return self.bbox.get_width()
