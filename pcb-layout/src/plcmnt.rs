@@ -40,7 +40,6 @@ impl Bbox{
             cur_y = start_y;
 
         }
-        
         ret_btree
     }
 }
@@ -75,8 +74,8 @@ impl Component{
         return self.bbox.get_height()
     }
     pub fn move_to(&mut self,x:i32 ,y:i32){
-        let delta_x = self.bbox.x1 - x;
-        let delta_y = self.bbox.y1 - y;
+        let delta_x = x - self.bbox.x1 ;
+        let delta_y = y - self.bbox.y1 ;
         self.move_comp(delta_x, delta_y);
     }
 

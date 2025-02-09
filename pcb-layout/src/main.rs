@@ -101,44 +101,43 @@ impl Individual{
     }
     */
     fn swap(&mut self) {
-        let a: usize = 1;
-        let b: usize = 2; 
+        let a: usize = 2;
+        let b: usize = 3; 
         let mut old_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
         let mut new_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
 
-        {
-            let mut a_comp = &mut (self.comp_list[a-1]);
-            let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
-            old_coords.append(&mut c_space);
-        }
         
-        let mut b_comp = &mut (self.comp_list[b-1]);
-        let mut c_space = (b_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+        let a_comp = &(self.comp_list[a-1]);
+        let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+        let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
         old_coords.append(&mut c_space);
-        let mut old_a_loc = (0,0);
-        {
-            let mut a_comp = &mut (self.comp_list[a-1]);
-            old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
-            a_comp.move_to(b_comp.bbox.x1, b_comp.bbox.y1);
-            let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
-            new_coords.append(&mut c_space);
-
-        }
-        b_comp.move_to(old_a_loc.0, old_a_loc.1);
-
+        
+        let  b_comp = &(self.comp_list[b-1]);
         let mut c_space = (b_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
+        let old_b_loc = (b_comp.bbox.x1, b_comp.bbox.y1);
+        old_coords.append(&mut c_space);
+        
+
+        let mut a_comp = &mut (self.comp_list[a-1]);
+        a_comp.move_to(old_b_loc.0, old_b_loc.1);
+        let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), a);
+        new_coords.append(&mut c_space);
+        //Might need scoping?? 
+        let mut  b_comp = &mut (self.comp_list[b-1]);        
+        b_comp.move_to(old_a_loc.0, old_a_loc.1);
+        let mut c_space = (b_comp).bbox.as_btree(self.discretization.try_into().unwrap(), b);
         new_coords.append(&mut c_space);
         for k in old_coords.iter(){
             let x = k.0.0 ;
             let y = k.0.1 ;
             let val = k.1;
-            let try_val = self.chromosone[y][x];
+            self.chromosone[y][x] = *val;
         }
         for k in new_coords.iter(){
             let x = k.0.0 ;
             let y = k.0.1 ;
             let val = k.1;
-            let try_val = self.chromosone[y][x];
+            self.chromosone[y][x] = *val;
         }
 
         
