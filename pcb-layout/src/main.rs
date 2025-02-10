@@ -81,16 +81,17 @@ impl Individual{
         
         for c in &self.comp_list{
             let mut c_space = (*c).bbox.as_btree(self.discretization.try_into().unwrap(), count);
-            a.append(&mut c_space);
             count += 1usize;
-        }
-        for k in a.iter(){
-            let x = k.0.0 ;
-            let y = k.0.1 ;
-            let val = k.1;
-            let try_val = self.chromosone[y][x];
-            if *val != try_val{
-                return false;
+        
+            for k in c_space.iter(){
+                let x = k.0.0 ;
+                let y = k.0.1 ;
+                let val = *k.1;
+                let try_val = self.chromosone[y][x];
+                println!("{val} = {try_val}");
+                if val != try_val{
+                    return false;
+                }
             }
         }
         valid 
@@ -210,8 +211,13 @@ fn main() {
     //id.swap();
     id.rotate(2, 90);
     id.rotate(2, 90);
-    id.rotate(2, 90);
-    let x = id.is_valid() || true;
+    id.rotate(2, 270);
+    id.rotate(3, 0);
+    //id.swap(1, 3);
+    //id.swap(1, 2);
+    
+    
+    let x = id.is_valid() ;
     if x {
         id.to_tex();
     }
