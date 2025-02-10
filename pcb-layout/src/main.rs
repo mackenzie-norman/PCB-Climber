@@ -2,6 +2,9 @@ use std::{collections::{btree_map, BTreeMap}, vec};
 use num::{cast::AsPrimitive, integer::gcd, ToPrimitive};
 mod plcmnt;
 use plcmnt::{Component, Bbox, Placement};
+use rand::prelude::*;
+
+
 //CHAT GPT CODE JUST TO TEST
 fn gcd_of_vector(nums: &[usize]) -> usize {
 
@@ -15,6 +18,14 @@ fn gcd_of_vector(nums: &[usize]) -> usize {
 
     result
 
+}
+fn random_rotation() -> i32{
+    // Get an RNG:
+    let mut rng = rand::rng();
+    let opts = [90,180,270];
+    let choice = opts.choose(&mut rng).unwrap();
+    *choice
+    
 }
 struct Individual{
     chromosone :  Vec<Vec<usize>>,
@@ -100,9 +111,7 @@ impl Individual{
         }
     }
     */
-    fn swap(&mut self) {
-        let a: usize = 1;
-        let b: usize = 3; 
+    fn swap(&mut self, a:usize, b:usize) {
         let mut old_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
         let mut new_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
 
@@ -147,16 +156,20 @@ impl Individual{
 
     
     }
-    fn rotate(& mut self){
+    fn rotate(& mut self, a:usize, rotation:i32){
         let mut old_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
         let mut new_coords:BTreeMap<(usize, usize), usize > = BTreeMap::new();
 
         //We need to zero, so lets grab the coords and also hold on to them 
-        let a: usize = 1;
+        //let a: usize = 2;
+        
         let mut a_comp = &mut (self.comp_list[a-1]);
         let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
-        let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
-        a_comp.rotate_comp(90);
+        old_coords.append(&mut c_space);
+        println!("{:?}", a_comp);
+        a_comp.rotate_comp(rotation);
+        println!("{:?}", a_comp);
+
         let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), a);
         new_coords.append(&mut c_space);
         for k in old_coords.iter(){
@@ -169,6 +182,7 @@ impl Individual{
             let x = k.0.0 ;
             let y = k.0.1 ;
             let val = k.1;
+            println!("{x}{y}");
             self.chromosone[y][x] = *val;
         }
 
@@ -179,11 +193,14 @@ impl Individual{
 fn main() {
     let placement_area = Bbox::new(0, 24, 0, 24);
     let  boxx= Bbox::new(0,2,0,4);
-    let  c1 = Component{refdes: "C1".to_string(), bbox:boxx, rotation:0};
+    let  mut c1 = Component{refdes: "C1".to_string(), bbox:boxx, rotation:0};
     let  box2= Bbox::new(4,8,6,8);
-    let  c2 = Component{refdes: "C2".to_string(), bbox:box2, rotation:0};
-    let  box3= Bbox::new(4,12,0,6);
-    let  c3 = Component{refdes: "C3".to_string(), bbox:box3, rotation:0};
+    let  mut c2 = Component{refdes: "C2".to_string(), bbox:box2, rotation:0};
+    let   box3= Bbox::new(4,12,0,6);
+    let  mut c3 = Component{refdes: "C3".to_string(), bbox:box3, rotation:0};
+    c1.move_comp(6, 6);
+    c2.move_comp(6, 6);
+    c3.move_comp(6, 6);
     //c1.move_comp( 10, 11);
     //c1.rotate_comp(90);
     let  comps:Vec<Component> = vec![c1,c2,c3];
@@ -191,8 +208,10 @@ fn main() {
     let mut id = Individual::new(pl);
     //id.to_tex();
     //id.swap();
-    id.rotate();
-    let x = id.is_valid();
+    id.rotate(2, 90);
+    id.rotate(2, 90);
+    id.rotate(2, 90);
+    let x = id.is_valid() || true;
     if x {
         id.to_tex();
     }

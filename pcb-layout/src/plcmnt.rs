@@ -47,23 +47,32 @@ impl Bbox{
         match angle{
             90 => 
             {
-                let old_x = self.x2;
-                self.x2 = self.y2;
-                self.y2 = old_x;
+                let height = self.get_height();
+                let width = self.get_width();
+                self.x2 = self.x1 + height as i32;
+                self.y2 = self.y1 + width as i32;
             },
             180 => 
             {
-                let old_x = self.x2;
-                self.x2 = self.y2;
-                self.y2 = old_x;
+                let height = self.get_height();
+                let width = self.get_width();
+                //self.x1 = self.x2
+                
+                self.y2 = self.y1;
+                self.y1 = self.y1 - height as i32;
+                self.x2 = self.x1 + width as i32;
+                
             },
 
 
             270 =>
             {
-                let old_x = self.x2;
-                self.x2 = self.y2;
-                self.y2 = old_x;
+                let height = self.get_height();
+                let width = self.get_width();
+                self.x2 = self.x1;
+                self.y2 = self.y1; 
+                self.x1 = self.x2 - height as i32;
+                self.y1 = self.y2 - width as i32;
             }
             _ => (),
         }
