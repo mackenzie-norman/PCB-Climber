@@ -88,7 +88,6 @@ impl Individual{
                 let y = k.0.1 ;
                 let val = *k.1;
                 let try_val = self.chromosone[y][x];
-                println!("{val} = {try_val}");
                 if val != try_val{
                     return false;
                 }
@@ -167,9 +166,8 @@ impl Individual{
         let mut a_comp = &mut (self.comp_list[a-1]);
         let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), 0);
         old_coords.append(&mut c_space);
-        println!("{:?}", a_comp);
         a_comp.rotate_comp(rotation);
-        println!("{:?}", a_comp);
+        
 
         let mut c_space = (a_comp).bbox.as_btree(self.discretization.try_into().unwrap(), a);
         new_coords.append(&mut c_space);
@@ -183,9 +181,11 @@ impl Individual{
             let x = k.0.0 ;
             let y = k.0.1 ;
             let val = k.1;
-            println!("{x}{y}");
             self.chromosone[y][x] = *val;
         }
+
+    }
+    fn move_to_new(a:usize) {
 
     }
 }
