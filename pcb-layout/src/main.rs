@@ -176,7 +176,7 @@ impl Individual {
             .bbox
             .as_btree(self.discretization.try_into().unwrap(), 0);
         old_coords.append(&mut c_space);
-        a_comp.rotate_comp(rotation);
+        a_comp.rotate_comp(rotation );
 
         let mut c_space = (a_comp)
             .bbox
@@ -231,9 +231,9 @@ fn main() {
     let mut id = Individual::new(pl);
     //id.to_tex();
     //id.swap();
-    id.rotate(2, 90);
-    id.rotate(2, 90);
-    id.rotate(2, 270);
+    id.rotate(1, 180);
+    //id.rotate(2, 90);
+    //id.rotate(2, 270);
     id.rotate(3, 0);
     //id.swap(1, 3);
     //id.swap(1, 2);

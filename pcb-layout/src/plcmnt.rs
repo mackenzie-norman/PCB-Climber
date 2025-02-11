@@ -1,5 +1,5 @@
 use std::{collections::BTreeMap, vec};
-
+use std::f64::consts::PI;
 #[derive(Debug)]
 pub struct Bbox {
     pub x1: i32,
@@ -20,6 +20,10 @@ impl Bbox {
             centerx: (x1 - x2).abs() / 2,
             centery: (y1 - y2).abs() / 2,
         }
+    }
+    pub fn recenter(&mut self){
+            self.centerx = (self.x1 - self.x2).abs() / 2;
+            self.centery = (self.y1 - self.y2).abs() / 2;
     }
     pub fn get_width(&self) -> usize {
         return (self.x1 - self.x2).unsigned_abs().try_into().unwrap();
@@ -47,6 +51,7 @@ impl Bbox {
         ret_btree
     }
     /// Rotates around the x1,y1 to avoid nasty discretization issues.
+    /* 
     pub fn rotate(&mut self, angle: i32) {
         match angle {
             90 => {
@@ -76,6 +81,27 @@ impl Bbox {
             _ => (),
         }
     }
+    */
+    pub fn rotate(&mut self, angle_degrees: f64)  {
+        self.recenter();
+        let angle_radians = angle_degrees * PI / 180.0;
+
+        let rotate_point = |x: i32, y: i32| -> (i32, i32) {
+            let dx = ( self.centerx - x ) as f64;
+            let dy = ( self.centery -y ) as f64;
+            let new_x = self.centerx as f64 + dx * angle_radians.cos() - dy * angle_radians.sin();
+            let new_y = self.centery as f64 + dx * angle_radians.sin() + dy * angle_radians.cos();
+            (new_x.round() as i32, new_y.round() as i32)
+        };
+
+        let ll = rotate_point(self.x1, self.y1);
+        let ur = rotate_point(self.x2, self.y2);
+        println!("{},{},{},{}" , ll.0, ll.1,ur.0,ur.1);
+        self.x1 = ll.0;
+        self.y1 = ll.1;
+        self.x2 = ur.0;
+        self.y2 = ur.1;
+    }
 }
 pub struct Placement {
     pub components: Vec<Component>,
@@ -101,10 +127,11 @@ impl Component {
         self.bbox.y1 += y;
         self.bbox.x2 += x;
         self.bbox.y2 += y;
+        self.bbox.recenter();
     }
     pub fn rotate_comp(&mut self, delta: i32) {
         self.rotation += delta;
-        self.bbox.rotate(delta);
+        self.bbox.rotate(delta as f64);
     }
     pub fn get_width(&self) -> usize {
         return self.bbox.get_width();
