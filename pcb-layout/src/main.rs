@@ -7,7 +7,7 @@ mod plcmnt;
 use plcmnt::{Bbox, Component, Placement};
 use rand::prelude::*;
 
-//CHAT GPT CODE JUST TO TEST
+//CHAT GPT CODE JUST TO TEST (It was wrong lol)
 fn gcd_of_vector(nums: &[usize]) -> usize {
     let mut result = nums[0]; // Initialize with the first element
 

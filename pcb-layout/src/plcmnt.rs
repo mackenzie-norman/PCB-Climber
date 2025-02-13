@@ -117,4 +117,17 @@ impl Component {
         let delta_y = y - self.bbox.y1;
         self.move_comp(delta_x, delta_y);
     }
+    pub fn get_center(&self) -> (i32,i32){
+        self.bbox.recenter()
+        (self.bbox.centerx, self.bbox.centery)
+    }
+}
+///This assumes all comps are on the same net lol 
+pub fn HPWL(comps: &Vec<Component>){
+    let mut max_x = 0.0;
+    let mut min_x = 100000.0;
+    let mut may_y = 0.0;
+    let mut min_y = 100000.0;
+    //for i in comps{}
+        
 }
