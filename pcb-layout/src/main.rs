@@ -3,8 +3,8 @@ use std::{
     vec,
 };
 mod plcmnt;
-use plcmnt::{Bbox, Component, Placement, hpwl};
-
+use plcmnt::{Bbox, Component, Placement, hpwl, gcd_of_vector};
+use num::ToPrimitive;
 use rand::prelude::*;
 
 
@@ -16,25 +16,73 @@ fn random_rotation() -> i32 {
     let choice = opts.choose(&mut rng).unwrap();
     *choice
 }
-struct Individual <'a> {
-    chromosone: &'a [usize],
-    
+struct Individual  {
+    chromosone: Vec<usize>, 
     comp_list: Vec<Component>,
     discretization: usize,
+    x_sz: usize,
+    y_sz: usize
 }
 
-impl <'a> Individual <'a> {
-    fn new(pl: Placement, arr:&'a mut [usize]) -> Self {
-        //For now lets just say its a 6 x 6
+impl Individual {
+    fn new(pl: Placement) -> Self {
+        
+        let mut sizes = Vec::new();
+        for a in &pl.components {
+            sizes.push(a.get_height());
+            sizes.push(a.get_width());
+        }
+        //println!("{:?}", sizes);
+        let disc = gcd_of_vector(&sizes);
+
+        let mut a: BTreeMap<(usize, usize), usize> = BTreeMap::new();
+        let mut count: usize = 1;
+        for c in &pl.components {
+            let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), count);
+            a.append(&mut c_space);
+            count += 1usize;
+        }
+
+        let mut  y_end: usize = (pl.placement_area.y2 / disc.to_i32().unwrap())
+            .try_into()
+            .unwrap();
+        let mut x_end: usize = (pl.placement_area.x2 / disc.to_i32().unwrap())
+            .try_into()
+            .unwrap();
+        x_end +=  10;
+        y_end += 10;
+
+
+
+
+        let mut arr: Vec<usize> = vec![0; x_end*y_end];
+        for k in a.iter(){
+            let index = k.0.0 + (k.0.1 * x_end);
+            arr[index] = *k.1;
+
+        }
+        
         Individual {
             chromosone: arr,
             comp_list: pl.components,
-            discretization: 1usize,
+            discretization: disc,
+            x_sz: x_end,
+            y_sz: y_end
         }
     }
-    fn to_tex(&self) {
+    fn pretty_print(&self) {
+        let mut c = 0;
         for i in (&self.chromosone).into_iter().rev() {
-            println!("{:?}", i);
+            if *i != 0{
+
+                print!("{}", i);
+            }else{
+                
+            print!("\u{25A0}");
+            }
+            c +=1;
+            if c >= self.x_sz{ c = 0; println!("");}
+
         }
     }
     /* 
@@ -190,11 +238,11 @@ fn main() {
         components: comps,
         placement_area: placement_area,
     };
-    let array_size = pl.array_size();
-    let mut chromosone:[usize]  = [0; array_size]; 
-    let mut id = Individual::new(pl, &mut chromosone);
+    let (array_size,disc) = pl.array_size();
+    
+    let mut id = Individual::new(pl);
+    id.pretty_print();
     /* 
-    //id.to_tex();
     //id.swap();
     println!("{}", id.score());
     id.rotate(2, 90);

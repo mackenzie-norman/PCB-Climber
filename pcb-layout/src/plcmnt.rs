@@ -2,7 +2,7 @@ use std::{collections::BTreeMap};
 use num::{cast::AsPrimitive, integer::gcd, ToPrimitive};
 
 
-fn gcd_of_vector(nums: &[usize]) -> usize {
+pub fn gcd_of_vector(nums: &[usize]) -> usize {
     let mut result = nums[0]; // Initialize with the first element
 
     for num in nums.iter().skip(1) {
@@ -156,7 +156,7 @@ pub fn hpwl(comps: &mut Vec<Component>) -> usize{
 }
 
 impl Placement{
-    pub fn array_size(&mut self) -> usize{
+    pub fn array_size(&mut self) -> (usize, usize){
         let mut sizes = Vec::new();
         for a in &self.components {
             sizes.push(a.get_height());
@@ -181,7 +181,7 @@ impl Placement{
             .unwrap();
         x_end +=  10;
         y_end += 10;
-        return x_end * y_end;
+        return (x_end * y_end, disc);
     }
 
 }
