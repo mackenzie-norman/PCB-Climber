@@ -1,5 +1,16 @@
-use std::{collections::BTreeMap, vec};
+use std::{collections::BTreeMap};
+use num::{cast::AsPrimitive, integer::gcd, ToPrimitive};
 
+
+fn gcd_of_vector(nums: &[usize]) -> usize {
+    let mut result = nums[0]; // Initialize with the first element
+
+    for num in nums.iter().skip(1) {
+        result = gcd(result, *num); // Calculate LCM for each pair
+    }
+
+    result
+}
 #[derive(Debug)]
 pub struct Bbox {
     pub x1: i32,
@@ -142,4 +153,35 @@ pub fn hpwl(comps: &mut Vec<Component>) -> usize{
     let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
     return net_bbox.get_height() + net_bbox.get_width();
         
+}
+
+impl Placement{
+    pub fn array_size(&mut self) -> usize{
+        let mut sizes = Vec::new();
+        for a in &self.components {
+            sizes.push(a.get_height());
+            sizes.push(a.get_width());
+        }
+        //println!("{:?}", sizes);
+        let disc = gcd_of_vector(&sizes);
+
+        let mut a: BTreeMap<(usize, usize), usize> = BTreeMap::new();
+        let mut count: usize = 1;
+        for c in &self.components {
+            let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), count);
+            a.append(&mut c_space);
+            count += 1usize;
+        }
+
+        let mut  y_end: usize = (self.placement_area.y2 / disc.to_i32().unwrap())
+            .try_into()
+            .unwrap();
+        let mut x_end: usize = (self.placement_area.x2 / disc.to_i32().unwrap())
+            .try_into()
+            .unwrap();
+        x_end +=  10;
+        y_end += 10;
+        return x_end * y_end;
+    }
+
 }

@@ -1,6 +1,5 @@
-use num::{cast::AsPrimitive, integer::gcd, ToPrimitive};
 use std::{
-    collections::{btree_map, BTreeMap},
+    collections::{ BTreeMap},
     vec,
 };
 mod plcmnt;
@@ -8,16 +7,8 @@ use plcmnt::{Bbox, Component, Placement, hpwl};
 
 use rand::prelude::*;
 
-//CHAT GPT CODE JUST TO TEST (It was wrong lol)
-fn gcd_of_vector(nums: &[usize]) -> usize {
-    let mut result = nums[0]; // Initialize with the first element
 
-    for num in nums.iter().skip(1) {
-        result = gcd(result, *num); // Calculate LCM for each pair
-    }
 
-    result
-}
 fn random_rotation() -> i32 {
     // Get an RNG:
     let mut rng = rand::rng();
@@ -25,53 +16,20 @@ fn random_rotation() -> i32 {
     let choice = opts.choose(&mut rng).unwrap();
     *choice
 }
-struct Individual {
-    chromosone: Vec<Vec<usize>>,
+struct Individual <'a> {
+    chromosone: &'a [usize],
+    
     comp_list: Vec<Component>,
     discretization: usize,
 }
-impl Individual {
-    fn new(pl: Placement) -> Self {
+
+impl <'a> Individual <'a> {
+    fn new(pl: Placement, arr:&'a mut [usize]) -> Self {
         //For now lets just say its a 6 x 6
-        let mut sizes = Vec::new();
-        for a in &pl.components {
-            sizes.push(a.get_height());
-            sizes.push(a.get_width());
-        }
-        //println!("{:?}", sizes);
-        let disc = gcd_of_vector(&sizes);
-
-        let mut a: BTreeMap<(usize, usize), usize> = BTreeMap::new();
-        let mut count: usize = 1;
-        for c in &pl.components {
-            let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), count);
-            a.append(&mut c_space);
-            count += 1usize;
-        }
-
-        let mut csone_vec = Vec::new();
-        let y_end: usize = (pl.placement_area.y2 / disc.to_i32().unwrap())
-            .try_into()
-            .unwrap();
-        let x_end: usize = (pl.placement_area.x2 / disc.to_i32().unwrap())
-            .try_into()
-            .unwrap();
-
-        for y in 0..y_end {
-            let mut t_v = Vec::new();
-            for x in 0..x_end {
-                let coords: (usize, usize) = (x, y);
-                match a.get(&coords) {
-                    Some(val) => t_v.push(*val),
-                    None => t_v.push(0),
-                }
-            }
-            csone_vec.push(t_v)
-        }
         Individual {
-            chromosone: csone_vec,
+            chromosone: arr,
             comp_list: pl.components,
-            discretization: disc,
+            discretization: 1usize,
         }
     }
     fn to_tex(&self) {
@@ -79,7 +37,7 @@ impl Individual {
             println!("{:?}", i);
         }
     }
-
+    /* 
     fn is_valid(&self) -> bool {
         let mut valid: bool = true;
         let mut a: BTreeMap<(usize, usize), usize> = BTreeMap::new();
@@ -103,7 +61,6 @@ impl Individual {
         }
         valid
     }
-    /*
     fn get_locs(&self, search_val: usize) -> Vec<(usize,usize)>{
         let ret_v = Vec::new();
         let mut y: usize = 0;
@@ -118,7 +75,6 @@ impl Individual {
 
         }
     }
-    */
     fn swap(&mut self, a: usize, b: usize) {
         let mut old_coords: BTreeMap<(usize, usize), usize> = BTreeMap::new();
         let mut new_coords: BTreeMap<(usize, usize), usize> = BTreeMap::new();
@@ -201,6 +157,7 @@ impl Individual {
     fn score(&mut self) -> usize {
         hpwl(&mut self.comp_list)
     }
+    */
 }
 
 fn main() {
@@ -229,11 +186,14 @@ fn main() {
     //c1.move_comp( 10, 11);
     //c1.rotate_comp(90);
     let comps: Vec<Component> = vec![c1, c2, c3];
-    let pl = Placement {
+    let mut pl = Placement {
         components: comps,
         placement_area: placement_area,
     };
-    let mut id = Individual::new(pl);
+    let array_size = pl.array_size();
+    let mut chromosone:[usize]  = [0; array_size]; 
+    let mut id = Individual::new(pl, &mut chromosone);
+    /* 
     //id.to_tex();
     //id.swap();
     println!("{}", id.score());
@@ -249,5 +209,6 @@ fn main() {
     if x {
         id.to_tex();
     }
+    */
     //println!("{}",(c1.string()))
 }
