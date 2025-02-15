@@ -57,7 +57,7 @@ impl Individual {
 
         let mut arr: Vec<usize> = vec![0; x_end*y_end];
         for k in a.iter(){
-            let index = k.0.0 + (k.0.1 * x_end);
+            let index = (x_end - k.0.0)  + (k.0.1 * x_end) ;
             arr[index] = *k.1;
 
         }
