@@ -21,6 +21,10 @@ impl Bbox {
             centery: (y1 - y2).abs() / 2,
         }
     }
+    pub fn recenter(&mut self){
+            self.centerx = (self.x1 - self.x2).abs() / 2;
+            self.centery = (self.y1 - self.y2).abs() / 2;
+    }
     pub fn get_width(&self) -> usize {
         return (self.x1 - self.x2).unsigned_abs().try_into().unwrap();
     }
@@ -117,17 +121,25 @@ impl Component {
         let delta_y = y - self.bbox.y1;
         self.move_comp(delta_x, delta_y);
     }
-    pub fn get_center(&self) -> (i32,i32){
-        self.bbox.recenter()
+    pub fn get_center(&mut self) -> (i32,i32){
+        self.bbox.recenter();
         (self.bbox.centerx, self.bbox.centery)
     }
 }
 ///This assumes all comps are on the same net lol 
-pub fn HPWL(comps: &Vec<Component>){
-    let mut max_x = 0.0;
-    let mut min_x = 100000.0;
-    let mut may_y = 0.0;
-    let mut min_y = 100000.0;
-    //for i in comps{}
+pub fn hpwl(comps: &mut Vec<Component>) -> usize{
+    let mut max_x = 0;
+    let mut min_x = 100000;
+    let mut max_y = 0;
+    let mut min_y = 100000;
+    for i in comps{
+        let (x,y) = i.get_center();
+        if x > max_x{ max_x = x};
+        if y > max_y{ max_y = y};
+        if x < min_x{ min_x = x};
+        if y < min_y{ min_y = y};
+    }
+    let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
+    return net_bbox.get_height() + net_bbox.get_width();
         
 }

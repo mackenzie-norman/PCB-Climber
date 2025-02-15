@@ -4,7 +4,8 @@ use std::{
     vec,
 };
 mod plcmnt;
-use plcmnt::{Bbox, Component, Placement};
+use plcmnt::{Bbox, Component, Placement, hpwl};
+
 use rand::prelude::*;
 
 //CHAT GPT CODE JUST TO TEST (It was wrong lol)
@@ -196,6 +197,10 @@ impl Individual {
         }
     }
     fn move_to_new(a: usize) {}
+
+    fn score(&mut self) -> usize {
+        hpwl(&mut self.comp_list)
+    }
 }
 
 fn main() {
@@ -231,10 +236,12 @@ fn main() {
     let mut id = Individual::new(pl);
     //id.to_tex();
     //id.swap();
+    println!("{}", id.score());
     id.rotate(2, 90);
     id.rotate(2, 90);
     id.rotate(2, 270);
     id.rotate(3, 0);
+    println!("{}", id.score());
     //id.swap(1, 3);
     //id.swap(1, 2);
 

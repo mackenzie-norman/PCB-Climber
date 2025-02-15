@@ -9,3 +9,9 @@ A few ideas:
 Checking overlap is hard too. Current naive implementation doesn't check on move. 
 - Want to make sure new loc is valid => get new loc and make sure its zeroed
 - run overlap checks on all comps - there is a fast way to do this 
+
+Okay I think were ready to implement this for real ish
+## ToDo
+- real genome rep
+- Scoring? 
+- Actual algo still (the fun part with a GA is this is pretty easy)
