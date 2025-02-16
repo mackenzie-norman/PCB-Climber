@@ -1,6 +1,5 @@
-use std::{collections::BTreeMap};
 use num::{cast::AsPrimitive, integer::gcd, ToPrimitive};
-
+use std::collections::BTreeMap;
 
 pub fn gcd_of_vector(nums: &[usize]) -> usize {
     let mut result = nums[0]; // Initialize with the first element
@@ -32,9 +31,9 @@ impl Bbox {
             centery: (y1 - y2).abs() / 2,
         }
     }
-    pub fn recenter(&mut self){
-            self.centerx = (self.x1 - self.x2).abs() / 2;
-            self.centery = (self.y1 - self.y2).abs() / 2;
+    pub fn recenter(&mut self) {
+        self.centerx = (self.x1 - self.x2).abs() / 2;
+        self.centery = (self.y1 - self.y2).abs() / 2;
     }
     pub fn get_width(&self) -> usize {
         return (self.x1 - self.x2).unsigned_abs().try_into().unwrap();
@@ -132,31 +131,38 @@ impl Component {
         let delta_y = y - self.bbox.y1;
         self.move_comp(delta_x, delta_y);
     }
-    pub fn get_center(&mut self) -> (i32,i32){
+    pub fn get_center(&mut self) -> (i32, i32) {
         self.bbox.recenter();
         (self.bbox.centerx, self.bbox.centery)
     }
 }
-///This assumes all comps are on the same net lol 
-pub fn hpwl(comps: &mut Vec<Component>) -> usize{
+///This assumes all comps are on the same net lol
+pub fn hpwl(comps: &mut Vec<Component>) -> usize {
     let mut max_x = 0;
     let mut min_x = 100000;
     let mut max_y = 0;
     let mut min_y = 100000;
-    for i in comps{
-        let (x,y) = i.get_center();
-        if x > max_x{ max_x = x};
-        if y > max_y{ max_y = y};
-        if x < min_x{ min_x = x};
-        if y < min_y{ min_y = y};
+    for i in comps {
+        let (x, y) = i.get_center();
+        if x > max_x {
+            max_x = x
+        };
+        if y > max_y {
+            max_y = y
+        };
+        if x < min_x {
+            min_x = x
+        };
+        if y < min_y {
+            min_y = y
+        };
     }
     let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
     return net_bbox.get_height() + net_bbox.get_width();
-        
 }
 
-impl Placement{
-    pub fn array_size(&mut self) -> (usize, usize){
+impl Placement {
+    pub fn array_size(&mut self) -> (usize, usize) {
         let mut sizes = Vec::new();
         for a in &self.components {
             sizes.push(a.get_height());
@@ -173,15 +179,14 @@ impl Placement{
             count += 1usize;
         }
 
-        let mut  y_end: usize = (self.placement_area.y2 / disc.to_i32().unwrap())
+        let mut y_end: usize = (self.placement_area.y2 / disc.to_i32().unwrap())
             .try_into()
             .unwrap();
         let mut x_end: usize = (self.placement_area.x2 / disc.to_i32().unwrap())
             .try_into()
             .unwrap();
-        x_end +=  10;
+        x_end += 10;
         y_end += 10;
         return (x_end * y_end, disc);
     }
-
 }
