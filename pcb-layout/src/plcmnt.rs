@@ -63,6 +63,10 @@ impl Bbox {
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
     }
+    pub fn does_overlap(&self, other: &Bbox) -> bool{
+        !(self.x2 < other.x1 || other.x2 < self.x1 || self.y2 < other.y1 || other.y2 < self.y1)
+
+    }
     /// Rotates around the x1,y1 to avoid nasty discretization issues.
     pub fn rotate(&mut self, angle: i32) {
         match angle {
