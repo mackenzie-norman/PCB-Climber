@@ -15,3 +15,8 @@ Okay I think were ready to implement this for real ish
 - real genome rep
 - Scoring? 
 - Actual algo still (the fun part with a GA is this is pretty easy)
+
+running into a problem of how to only allow valid moves, need to make sure a move
+- doesnt overlap
+- doesnt wrap around
+- is in bounds

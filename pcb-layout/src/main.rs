@@ -126,6 +126,18 @@ impl Individual {
         }
     }
     */
+    fn move_comp(&mut self, a: usize, x:usize, y:usize ){
+        // lets first check to see if the new coords are in bounds
+        let mut a_comp = &mut (self.comp_list[a - 1]);
+        let mut new_bbox = a_comp.try_move_to(x.to_i32().unwrap(), y.to_i32().unwrap());
+        let mut worked = true;
+        if new_bbox.is_out_of_bounds(&Bbox::new(0, self.x_sz * disc , 0, self.y_sz * disc)){worked = false};
+        let mut c_space: BTreeMap<(usize, usize), usize> = new_bbox.as_btree(self.discretization.try_into().unwrap(), a);
+
+
+
+        
+    }
     fn swap(&mut self, a: usize, b: usize) {
         let mut old_coords: BTreeMap<(usize, usize), usize> = BTreeMap::new();
         let mut new_coords: BTreeMap<(usize, usize), usize> = BTreeMap::new();
@@ -187,7 +199,7 @@ impl Individual {
             .as_btree(self.discretization.try_into().unwrap(), 0);
         old_coords.append(&mut c_space);
         a_comp.move_to(x.to_i32().unwrap(), y.to_i32().unwrap());
-        let mut c_space = (a_comp)
+        let mut c_space: BTreeMap<(usize, usize), usize> = (a_comp)
             .bbox
             .as_btree(self.discretization.try_into().unwrap(), a);
         new_coords.append(&mut c_space);
@@ -312,15 +324,17 @@ fn main() {
     id.pretty_print();
     println!("{}", id.score());
     //id.swap(1, 3);
-    for _ in 0..100 {
+    for _ in 0..10 {
         //id.swap(1, 2);
         id.move_to_new(1);
         //id.swap(1, 2);
         id.move_to_new(2);
+        println!("{}", "++++++++++++++++++++++++".red());
+        id.pretty_print();
+        println!("{}","++++++++++++++++++++++++".red());
         //id.move_to_new(1);
     }
     println!("{}", id.score());
-    id.pretty_print();
 
     /*
     //id.swap();

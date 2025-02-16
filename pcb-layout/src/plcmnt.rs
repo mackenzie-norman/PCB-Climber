@@ -10,7 +10,7 @@ pub fn gcd_of_vector(nums: &[usize]) -> usize {
 
     result
 }
-#[derive(Debug)]
+#[derive(Debug , Copy, Clone)]
 pub struct Bbox {
     pub x1: i32,
     pub x2: i32,
@@ -60,6 +60,9 @@ impl Bbox {
         }
         ret_btree
     }
+    pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
+        self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
+    }
     /// Rotates around the x1,y1 to avoid nasty discretization issues.
     pub fn rotate(&mut self, angle: i32) {
         match angle {
@@ -91,11 +94,12 @@ impl Bbox {
         }
     }
 }
+#[derive(Debug ,  Clone)]
 pub struct Placement {
     pub components: Vec<Component>,
     pub placement_area: Bbox,
 }
-#[derive(Debug)]
+#[derive(Debug ,  Clone)]
 pub struct Component {
     pub refdes: String,
     pub bbox: Bbox,
@@ -134,6 +138,17 @@ impl Component {
     pub fn get_center(&mut self) -> (i32, i32) {
         self.bbox.recenter();
         (self.bbox.centerx, self.bbox.centery)
+    }
+    pub fn try_move_to(& self, x: i32, y: i32 ) -> Bbox {
+        let delta_x = x - self.bbox.x1;
+        let delta_y = y - self.bbox.y1;
+        Bbox::new(
+        self.bbox.x1 + delta_x,
+        self.bbox.y1 + delta_y,
+        self.bbox.x2 + delta_x,
+        self.bbox.y2 + delta_y)
+
+
     }
 }
 ///This assumes all comps are on the same net lol
