@@ -108,57 +108,8 @@ impl Individual {
     }
     
  
-    fn swap(&mut self, a: usize, b: usize) {
-        let mut old_coords: BTreeMap<(usize, usize), usize> = BTreeMap::new();
-        let mut new_coords: BTreeMap<(usize, usize), usize> = BTreeMap::new();
-
-        //We need to zero, so lets grab the coords and also hold on to them
-        let a_comp = &(self.comp_list[a - 1]);
-        let mut c_space = (a_comp)
-            .bbox
-            .as_btree(self.discretization.try_into().unwrap(), 0);
-        let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
-        old_coords.append(&mut c_space);
-
-        let b_comp = &(self.comp_list[b - 1]);
-        let mut c_space = (b_comp)
-            .bbox
-            .as_btree(self.discretization.try_into().unwrap(), 0);
-        let old_b_loc = (b_comp.bbox.x1, b_comp.bbox.y1);
-        old_coords.append(&mut c_space);
-
-        //Now we want to swap locations
-        let mut a_comp = &mut (self.comp_list[a - 1]);
-        a_comp.move_to(old_b_loc.0, old_b_loc.1);
-        let mut c_space = (a_comp)
-            .bbox
-            .as_btree(self.discretization.try_into().unwrap(), a);
-        new_coords.append(&mut c_space);
-
-        let mut b_comp = &mut (self.comp_list[b - 1]);
-        b_comp.move_to(old_a_loc.0, old_a_loc.1);
-        let mut c_space = (b_comp)
-            .bbox
-            .as_btree(self.discretization.try_into().unwrap(), b);
-        new_coords.append(&mut c_space);
-        for k in old_coords.iter() {
-            let val = k.1;
-            let idx = self.tuple_to_index(*k.0);
-            self.chromosone[idx] = *val;
-        }
-        for k in new_coords.iter() {
-            let val = k.1;
-            let idx = self.tuple_to_index(*k.0);
-            self.chromosone[idx] = *val;
-        }
-    }
 */
-    fn move_to_new(&mut self, a: usize) {
-        let mut rng = rand::rng();
-        let x = rng.random_range(0..self.pl_area.x2);
-        let y = rng.random_range(0..self.pl_area.y2);
-        //We need to zero, so lets grab the coords and also hold on to them
-        //let a: usize = 2;
+    fn move_comp(&mut self, a: usize,x:i32, y:i32) -> bool{
         let mut a_comp = &mut (self.comp_list[a - 1]);
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
         a_comp.move_to(x.to_i32().unwrap(), y.to_i32().unwrap());
@@ -177,11 +128,48 @@ impl Individual {
             //println!("{}", "BAD".red());
             let mut a_comp = &mut (self.comp_list[a - 1]);
             a_comp.move_to(old_pos.0, old_pos.1);
+            return false;
 
         }else{
-
+            return true;
             //println!("{}", "GOOD".green());
         }
+    }
+    fn swap(&mut self, a: usize, b: usize) -> bool {
+        //We need to zero, so lets grab the coords and also hold on to them
+        let a_comp = &(self.comp_list[a - 1]);
+        let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
+
+        let b_comp = &(self.comp_list[b - 1]);
+        let old_b_loc = (b_comp.bbox.x1, b_comp.bbox.y1);
+        let mut a_comp = &mut (self.comp_list[a - 1]);
+        a_comp.move_to(old_b_loc.0, old_b_loc.1);
+        drop(a_comp);
+
+        if(self.move_comp(b, old_a_loc.0, old_a_loc.1)){
+
+            if(self.move_comp(a, old_b_loc.0, old_b_loc.1)){
+                return true;
+            }else{
+                let mut a_comp = &mut (self.comp_list[a - 1]);
+                a_comp.move_to(old_a_loc.0, old_a_loc.1);
+                drop(a_comp);
+                
+            }
+
+        }else{
+            
+            self.move_comp(b, old_b_loc.0, old_b_loc.1);
+        }
+        true
+    }
+    fn move_to_new(&mut self, a: usize) {
+        let mut rng = rand::rng();
+        let x = rng.random_range(0..self.pl_area.x2);
+        let y = rng.random_range(0..self.pl_area.y2);
+        //We need to zero, so lets grab the coords and also hold on to them
+        //let a: usize = 2;
+        self.move_comp(a, x, y);
         
     }
 
@@ -189,7 +177,7 @@ impl Individual {
         hpwl(&mut self.comp_list)
     }
 
-    fn rotate(&mut self, a: usize, rotation: i32) {
+    fn rotate(&mut self, a: usize, rotation: i32) -> bool {
         let mut a_comp = &mut (self.comp_list[a - 1]);
       
         a_comp.rotate_comp(rotation);
@@ -208,11 +196,11 @@ impl Individual {
             //println!("{}", "BAD".red());
             let mut a_comp = &mut (self.comp_list[a - 1]);
             a_comp.rotate_comp(360 - rotation);
-            
+            return false;
             //a_comp.move_to(old_pos.0, old_pos.1);
 
         }else{
-
+            return true;
             //println!("{}", "GOOD".green());
         }
 
@@ -268,17 +256,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     println!("{}", id.score());
     //id.swap(1, 3);
     id.rotate(1, 90);
-    for _ in 0..1000 {
-        //id.swap(1, 2);
-        id.rotate(1, random_rotation());
-        id.move_to_new(1);
-        //id.swap(1, 2);
-        id.move_to_new(2);
-        id.move_to_new(3);
-        //println!("{}", "++++++++++++++++++++++++".red());
-        //id.pretty_print();
-        //println!("{}","++++++++++++++++++++++++".red());
-        //id.move_to_new(1);
+    let mut rng = rand::rng();
+    let opts:[usize; 3] = [1,2,3];
+    for _ in 0..10000000 {
+        let a = *opts.choose(&mut rng).unwrap();
+        let b = *opts.choose(&mut rng).unwrap();
+        id.swap(a,b);
+        id.rotate(a, random_rotation());
+        id.move_to_new(a);
     }
     println!("{}", id.score());
 
