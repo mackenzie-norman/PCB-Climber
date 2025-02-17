@@ -38,77 +38,7 @@ impl Individual {
 
 
     }
-    /*
-    fn pretty_print(&self) {
-        let mut c = 0;
-        for i in (&self.chromosone).into_iter().rev() {
-            if *i != 0 {
-                print!("{}", i.to_string().blue());
-            } else {
-                print!("{}", "\u{25A0}".green());
-            }
-            c += 1;
-            if c >= self.x_sz {
-                c = 0;
-                println!("");
-            }
-        }
-    }
-    fn tuple_to_index(&self, tple: (usize, usize)) -> usize {
-        (self.x_sz - tple.0) + (tple.1 * self.x_sz)
-    }
-    fn is_valid(&self) -> bool {
-        let mut valid: bool = true;
-        let mut a: BTreeMap<(usize, usize), usize> = BTreeMap::new();
-        let mut count: usize = 1;
-
-        for c in &self.comp_list {
-            let mut c_space = (*c)
-                .bbox
-                .as_btree(self.discretization.try_into().unwrap(), count);
-            count += 1usize;
-
-            for k in c_space.iter() {
-                let x = k.0 .0;
-                let y = k.0 .1;
-                let val = *k.1;
-                let try_val = self.chromosone[y][x];
-                if val != try_val {
-                    return false;
-                }
-            }
-        }
-        valid
-    }
-    fn get_locs(&self, search_val: usize) -> Vec<(usize,usize)>{
-        let ret_v = Vec::new();
-        let mut y: usize = 0;
-        let mut x: usize = 0;
-        while y <= self.chromosone.len(){
-            y += 1;
-            while x <= self.chromosone[y].len(){
-                if self.chromosone[y][x] == search_val{
-                    self.chromosone
-                }
-            }
-
-        }
-    }   
-    fn move_comp(&mut self, a: usize, x:usize, y:usize ){
-        // lets first check to see if the new coords are in bounds
-        let mut a_comp = &mut (self.comp_list[a - 1]);
-        let mut new_bbox = a_comp.try_move_to(x.to_i32().unwrap(), y.to_i32().unwrap());
-        let mut worked = true;
-        if new_bbox.is_out_of_bounds(&Bbox::new(0, self.x_sz * disc , 0, self.y_sz * disc)){worked = false};
-        let mut c_space: BTreeMap<(usize, usize), usize> = new_bbox.as_btree(self.discretization.try_into().unwrap(), a);
-
-
-
-        
-    }
     
- 
-*/
     fn move_comp(&mut self, a: usize,x:i32, y:i32) -> bool{
         let mut a_comp = &mut (self.comp_list[a - 1]);
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
@@ -206,6 +136,17 @@ impl Individual {
 
        
     }
+
+    fn crossover(&self, other : & Individual) -> Individual{
+        //assert!() // add assertion to ensure they are same size
+        
+        let mut child: Individual =  Individual{
+            comp_list: self.comp_list.clone(),
+            pl_area: self.pl_area
+        };
+        child
+
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>>{
@@ -241,6 +182,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         placement_area: placement_area,
     };
 
+    let mut pl_2 = pl.clone();
+
     let mut id = Individual::new(pl);
     //id.rotate(2, 90);
     //id.rotate(2, 270);
@@ -258,7 +201,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     id.rotate(1, 90);
     let mut rng = rand::rng();
     let opts:[usize; 3] = [1,2,3];
-    for _ in 0..10000000 {
+    for _ in 0..1 {
         let a = *opts.choose(&mut rng).unwrap();
         let b = *opts.choose(&mut rng).unwrap();
         id.swap(a,b);
