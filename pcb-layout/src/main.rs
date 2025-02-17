@@ -103,8 +103,8 @@ impl Individual {
         
     }
 
-    fn score(&mut self) -> usize {
-        hpwl(&mut self.comp_list)
+    fn score(& self) -> usize {
+        hpwl(& self.comp_list)
     }
 
     fn rotate(&mut self, a: usize, rotation: i32) -> bool {
@@ -252,18 +252,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     //println!("{}", id.score());
     //id.swap(1, 3);
     //id.rotate(1, 90);
-    for _ in 0..10 {
+    for _ in 0..1000 {
         for ind in &mut population{
             ind.mutate();
         }
+        for i in (0..pop_size).step_by(2){
+            let parent_a: & Individual = &population[i];
+            let parent_b: & Individual = &population[i + 1];
+            let mut child_a: Individual =  parent_a.crossover(parent_b);
+            let mut child_b: Individual =  parent_b.crossover(parent_a);
+            population.push(child_a);
+            population.push(child_b);
+        }
+        population.sort_by(|a: &Individual, b: &Individual| { 
+            let a_s = (a.score()).clone();
+            let b_s = (b.score()).clone();
+            a_s.cmp(&b_s)}
+        );
+        population.truncate(pop_size);
     }
-    population.sort_by(|a, b| a.score().cmp( &b.score()));
     /*
     */
     let mut id = &mut population[0];
     //let mut id2 = &mut population[1];
     //println!("{}",(c1.string()))
-    //println!("{:?}", id.comp_list);
+    println!("{:?}", id.comp_list);
     println!("{}", id.score());
     let mut backend: BitMapBackend<'_> = BitMapBackend::new("1.png", (100,100));
     // And if we want SVG backend

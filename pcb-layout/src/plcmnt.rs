@@ -149,6 +149,7 @@ impl Component {
         self.bbox.y1 += y;
         self.bbox.x2 += x;
         self.bbox.y2 += y;
+        self.bbox.recenter();
     }
     pub fn rotate_comp(&mut self, delta: i32) {
         self.rotation += delta ;
@@ -166,8 +167,8 @@ impl Component {
         let delta_y = y - self.bbox.y1;
         self.move_comp(delta_x, delta_y);
     }
-    pub fn get_center(&mut self) -> (i32, i32) {
-        self.bbox.recenter();
+    pub fn get_center(& self) -> (i32, i32) {
+        //self.bbox.recenter();
         (self.bbox.centerx, self.bbox.centery)
     }
     pub fn try_move_to(& self, x: i32, y: i32 ) -> Bbox {
@@ -186,7 +187,7 @@ impl Component {
     }
 }
 ///This assumes all comps are on the same net lol
-pub fn hpwl(comps: &mut Vec<Component>) -> usize {
+pub fn hpwl(comps: & Vec<Component>) -> usize {
     let mut max_x = -1000000000;
     let mut min_x = 100000;
     let mut max_y = -100000000;
@@ -207,7 +208,7 @@ pub fn hpwl(comps: &mut Vec<Component>) -> usize {
         };
     }
     let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
-    return net_bbox.get_height() * net_bbox.get_width();
+    return net_bbox.get_height() + net_bbox.get_width();
 }
 
 impl Placement {
