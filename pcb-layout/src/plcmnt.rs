@@ -1,4 +1,4 @@
-use num::{cast::AsPrimitive, integer::gcd, ToPrimitive};
+use num::{integer::gcd, ToPrimitive};
 use std::collections::BTreeMap;
 
 pub fn gcd_of_vector(nums: &[usize]) -> usize {
@@ -125,7 +125,8 @@ impl Component {
         self.bbox.y2 += y;
     }
     pub fn rotate_comp(&mut self, delta: i32) {
-        self.rotation += delta;
+        self.rotation += delta ;
+        self.rotation %= 360;
         self.bbox.rotate(delta);
     }
     pub fn get_width(&self) -> usize {
@@ -154,12 +155,15 @@ impl Component {
 
 
     }
+    pub fn is_negative( &self) -> bool{
+        self.bbox.x1 < 0 || self.bbox.y1 < 0
+    }
 }
 ///This assumes all comps are on the same net lol
 pub fn hpwl(comps: &mut Vec<Component>) -> usize {
-    let mut max_x = 0;
+    let mut max_x = -1000000000;
     let mut min_x = 100000;
-    let mut max_y = 0;
+    let mut max_y = -100000000;
     let mut min_y = 100000;
     for i in comps {
         let (x, y) = i.get_center();
