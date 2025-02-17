@@ -180,6 +180,25 @@ impl Individual {
         child
 
     }
+
+    fn mutate(&mut self) {
+        let mut rng = rand::rng();
+        let a = rng.random_range(1..self.comp_list.len() + 1);
+        let c = rng.random_range(1..4);
+        match c {
+            1   => {
+                let b = rng.random_range(1..self.comp_list.len() + 1);
+                self.swap(a, b);
+            },
+            2 =>{
+                self.move_to_new(a);
+            }
+            3 => {
+                self.rotate(a, random_rotation());
+            },
+            _ =>{}
+        }
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>>{
@@ -229,40 +248,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     // let backend = SVGBackend::new("output.svg", (800, 600));
     //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
     id.plot(&mut backend);
-    backend.present();
+    let _ = backend.present();
     println!("{}", id.score());
     //id.swap(1, 3);
-    id.rotate(1, 90);
+    //id.rotate(1, 90);
     let mut rng = rand::rng();
     let opts:[usize; 3] = [1,2,3];
-    for _ in 0..100000 {
-        let a = *opts.choose(&mut rng).unwrap();
-        let b = *opts.choose(&mut rng).unwrap();
-        id.swap(a,b);
-        for i in &id.comp_list{
-            if i.is_negative(){
-                println!("rot!");
-                break;
-            }
-        } 
-        id2.swap(b, a);
-        id.rotate(a, random_rotation());
-        for i in &id.comp_list{
-            if i.is_negative(){
-                println!("rot!");
-                break;
-            }
-        } 
-        id2.rotate(a, random_rotation());
-        id.move_to_new(a);
-        for i in &id.comp_list{
-            if i.is_negative(){
-                println!("rot!");
-                break;
-            }
-        } 
-        id2.move_to_new(a);
-        /*
+    for _ in 0..1000000 {
+        id.mutate();
+        id2.mutate(); 
         let mut c1= id.crossover(&id2);
         let mut c2 = id2.crossover(&id);
         if c1.score() < id.score(){
@@ -273,6 +267,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
 
             id2 = c2;
         }
+        /*
          */
     }
     println!("{},{}", id.score(), id2.score());
@@ -294,7 +289,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     // let backend = SVGBackend::new("output.svg", (800, 600));
     //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
     //let c = id.crossover(&id2);
-    id.plot(&mut backend);
+    if id.score() < id2.score(){
+        id.plot(&mut backend);
+    }else{
+        id2.plot(&mut backend);
+    }
     backend.present()?;
     
     Ok(())

@@ -1,6 +1,7 @@
 use num::{integer::gcd, ToPrimitive};
+use plotters::prelude::LogScalable;
 use std::collections::BTreeMap;
-
+use std::f64::consts::PI;
 pub fn gcd_of_vector(nums: &[usize]) -> usize {
     let mut result = nums[0]; // Initialize with the first element
 
@@ -27,13 +28,13 @@ impl Bbox {
             x2: x2,
             y1: y1,
             y2: y2,
-            centerx: (x1 - x2).abs() / 2,
-            centery: (y1 - y2).abs() / 2,
+            centerx: x1 + ((x1 - x2).abs() / 2),
+            centery: y1 + ((y1 - y2).abs() / 2),
         }
     }
     pub fn recenter(&mut self) {
-        self.centerx = (self.x1 - self.x2).abs() / 2;
-        self.centery = (self.y1 - self.y2).abs() / 2;
+        self.centerx = self.x1 + ((self.x1 - self.x2).abs() / 2);
+        self.centery = self.y1 + ((self.y1 - self.y2).abs() / 2);
     }
     pub fn get_width(&self) -> usize {
         return (self.x1 - self.x2).unsigned_abs().try_into().unwrap();
@@ -68,6 +69,30 @@ impl Bbox {
 
     }
     /// Rotates around the x1,y1 to avoid nasty discretization issues.
+    /// 
+    pub fn rotate(&mut self, angle_degrees: f64)  {
+        self.recenter();
+        let angle_radians = angle_degrees * PI / 180.0;
+
+        let rotate_point = |x: i32, y: i32| -> (i32, i32) {
+            let dx = ( x - self.centerx  ) as f64;
+            let dy = ( y - self.centery  ) as f64;
+            let sin = angle_radians.sin();
+            let cos = angle_radians.cos();
+
+            let new_x = dx *cos  - dy * sin;
+            let new_y = (dx * sin  + dy * cos);
+            (self.centerx + new_x.round() as i32, self.centery + new_y.round() as i32)
+        };
+
+        let ll = rotate_point(self.x1, self.y1);
+        let ur = rotate_point(self.x2, self.y2);
+        self.x1 = ll.0;
+        self.y1 = ll.1;
+        self.x2 = ur.0;
+        self.y2 = ur.1;
+    }
+    /* 
     pub fn rotate(&mut self, angle: i32) {
         match angle {
             90 => {
@@ -97,6 +122,7 @@ impl Bbox {
             _ => (),
         }
     }
+    */
 }
 #[derive(Debug ,  Clone)]
 pub struct Placement {
@@ -127,7 +153,7 @@ impl Component {
     pub fn rotate_comp(&mut self, delta: i32) {
         self.rotation += delta ;
         self.rotation %= 360;
-        self.bbox.rotate(delta);
+        self.bbox.rotate(delta.as_f64());
     }
     pub fn get_width(&self) -> usize {
         return self.bbox.get_width();
@@ -181,7 +207,7 @@ pub fn hpwl(comps: &mut Vec<Component>) -> usize {
         };
     }
     let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
-    return net_bbox.get_height() + net_bbox.get_width();
+    return net_bbox.get_height() * net_bbox.get_width();
 }
 
 impl Placement {
