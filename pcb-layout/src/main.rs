@@ -29,10 +29,13 @@ impl Individual {
         }
     }
     fn plot(&self, backend :&mut BitMapBackend<'_>){
+        let mut rgb = 0;
         for i in &self.comp_list{
             let mut rng = rand::rng();
+            rgb += 30;
+            rgb %= 254;
             //let x = ;
-            backend.draw_rect((i.bbox.x1, i.bbox.y2), (i.bbox.x2, i.bbox.y1), &RGBColor(0,rng.random_range(0..255),rng.random_range(0..255)), true);
+            backend.draw_rect((i.bbox.x1, i.bbox.y2), (i.bbox.x2, i.bbox.y1), &RGBColor(rgb,rgb,128), true);
         } 
 
 
@@ -125,7 +128,7 @@ impl Individual {
         if !okay {
             //println!("{}", "BAD".red());
             let a_comp = &mut (self.comp_list[a - 1]);
-            a_comp.rotate_comp(360 - rotation);
+            a_comp.rotate_comp(-1 * rotation);
             return false;
             //a_comp.move_to(old_pos.0, old_pos.1);
 
@@ -221,14 +224,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         bbox: box3,
         rotation: 0,
     };
+    let mut c4 = c2.clone();
+    c4.refdes = "C4".to_string();
+    let mut c5 = c2.clone();
+    c5.refdes = "C5".to_string();
     c1.move_comp(6, 6);
     c2.move_comp(6, 6);
+    c4.move_comp(0, 6);
+    c5.move_comp(10, 0);
     c3.move_comp(6, 6);
     //c1.move_comp( 10, 11);
     //c1.rotate_comp(90);
     let pl_width = placement_area.get_width();
     let pl_height = placement_area.get_height();
-    let comps: Vec<Component> = vec![c1, c2, c3];
+    let comps: Vec<Component> = vec![c1, c2, c3, c4, c5];
     let pl = Placement {
         components: comps,
         placement_area: placement_area,
@@ -243,12 +252,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     }
 
     
-    //let mut backend: BitMapBackend<'_> = BitMapBackend::new("0.png", (pl_width.try_into().unwrap(), pl_height.try_into().unwrap()));
-    //// And if we want SVG backend
-    //// let backend = SVGBackend::new("output.svg", (800, 600));
-    ////backend.draw_rect((50, 50), (200, 150), &RED, true)?;
-    //id.plot(&mut backend);
-    //let _ = backend.present();
+    let mut backend: BitMapBackend<'_> = BitMapBackend::new("0.png", (pl_width.try_into().unwrap(), pl_height.try_into().unwrap()));
+    // And if we want SVG backend
+    // let backend = SVGBackend::new("output.svg", (800, 600));
+    //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
+    let mut id = &mut population[0];
+    id.plot(&mut backend);
+    let _ = backend.present();
     //println!("{}", id.score());
     //id.swap(1, 3);
     //id.rotate(1, 90);

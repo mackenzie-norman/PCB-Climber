@@ -20,3 +20,7 @@ running into a problem of how to only allow valid moves, need to make sure a mov
 - doesnt overlap
 - doesnt wrap around
 - is in bounds
+
+## Gave up on genomic representation (for now)
+- Got most of it working, had a hard time with rotation (I was lazy and tried chat gpt code)
+- Now something is causing the components to escape placement bounds 
