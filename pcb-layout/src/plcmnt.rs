@@ -82,16 +82,16 @@ impl Bbox {
             let cos = angle_radians.cos();
 
             let new_x = dx *cos  - dy * sin;
-            let new_y = (dx * sin  + dy * cos);
+            let new_y = dx * sin  + dy * cos;
             (self.centerx + new_x.round() as i32, self.centery + new_y.round() as i32)
         };
 
         let ll = rotate_point(self.x1, self.y1);
         let ur = rotate_point(self.x2, self.y2);
-        self.x1 = ll.0;
-        self.y1 = ll.1;
-        self.x2 = ur.0;
-        self.y2 = ur.1;
+        self.x1 =  if ll.0 < ur.0{ ll.0} else { ur.0};
+        self.y1 = if ll.1 < ur.1{ ll.1} else { ur.1};
+        self.x2 =  if ll.0 > ur.0{ ll.0} else { ur.0};
+        self.y2 = if ll.1 > ur.1{ ll.1} else { ur.1};
         self.recenter();
     }
     /* 

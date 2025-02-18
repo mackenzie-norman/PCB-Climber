@@ -144,11 +144,11 @@ impl Individual {
                 if count != a && a_comp.bbox.does_overlap(&i.bbox){okay = false};
                 count += 1;
             }
+            
         } 
         if !okay {
-            //println!("{}", "BAD".red());
             let a_comp = &mut (self.comp_list[a - 1]);
-            a_comp.rotate_comp( 360 - rotation);
+            a_comp.rotate_comp( -1* rotation);
             return false;
             //a_comp.move_to(old_pos.0, old_pos.1);
 
@@ -208,6 +208,7 @@ impl Individual {
         let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
         let c = rng.random_range(1..4);
+        
         match c {
             1   => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);
@@ -254,10 +255,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     c5.move_comp(15, 2);
     c3.move_comp(6, 6);
     //c1.move_comp( 10, 11);
-    //c1.rotate_comp(90);
+    //for i in 1..2000{ c1.rotate_comp(90);};
     let pl_width = placement_area.get_width();
     let pl_height = placement_area.get_height();
-    let comps: Vec<Component> = vec![c1, c2, c3, c4, c5];
+    let comps: Vec<Component> = vec![c1,c2,c3,c4,c5];
     let pl = Placement {
         components: comps,
         placement_area: placement_area,
@@ -282,7 +283,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     //println!("{}", id.score());
     //id.swap(1, 3);
     //id.rotate(1, 90);
-    for _ in 0..1000 {
+    for _ in 0..10000 {
         for ind in &mut population{
             ind.mutate();
         }
