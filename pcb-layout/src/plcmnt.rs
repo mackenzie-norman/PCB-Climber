@@ -36,6 +36,7 @@ impl Bbox {
         self.centerx = self.x1 + ((self.x1 - self.x2).abs() / 2);
         self.centery = self.y1 + ((self.y1 - self.y2).abs() / 2);
     }
+    
     pub fn get_width(&self) -> usize {
         return (self.x1 - self.x2).unsigned_abs().try_into().unwrap();
     }
@@ -94,6 +95,29 @@ impl Bbox {
         self.y2 = if ll.1 > ur.1{ ll.1} else { ur.1};
         self.recenter();
     }
+    pub fn rotate_around_point(&mut self, angle_degrees: f64, centerx:i32, centery:i32)  {
+        self.recenter();
+        let angle_radians = angle_degrees * PI / 180.0;
+
+        let rotate_point = |x: i32, y: i32| -> (i32, i32) {
+            let dx = ( x - centerx  ) as f64;
+            let dy = ( y - centery  ) as f64;
+            let sin = angle_radians.sin();
+            let cos = angle_radians.cos();
+
+            let new_x = dx *cos  - dy * sin;
+            let new_y = dx * sin  + dy * cos;
+            (centerx + new_x.round() as i32, centery + new_y.round() as i32)
+        };
+
+        let ll = rotate_point(self.x1, self.y1);
+        let ur = rotate_point(self.x2, self.y2);
+        self.x1 =  if ll.0 < ur.0{ ll.0} else { ur.0};
+        self.y1 = if ll.1 < ur.1{ ll.1} else { ur.1};
+        self.x2 =  if ll.0 > ur.0{ ll.0} else { ur.0};
+        self.y2 = if ll.1 > ur.1{ ll.1} else { ur.1};
+        self.recenter();
+    }
     /* 
     pub fn rotate(&mut self, angle: i32) {
         match angle {
@@ -132,10 +156,28 @@ pub struct Placement {
     pub placement_area: Bbox,
 }
 #[derive(Debug ,  Clone)]
+pub struct Pin{
+    pub refdes: String,
+    pub net: i32,
+    pub bbox: Bbox,
+
+}
+impl Pin{
+    pub fn move_pin(&mut self, x: i32, y: i32) {
+        self.bbox.x1 += x;
+        self.bbox.y1 += y;
+        self.bbox.x2 += x;
+        self.bbox.y2 += y;
+        self.bbox.recenter();
+    }
+
+}
+#[derive(Debug ,  Clone)]
 pub struct Component {
     pub refdes: String,
     pub bbox: Bbox,
     pub rotation: i32,
+    pub pins: Vec<Pin>
 }
 impl Component {
     fn string(&self) -> String {
@@ -151,6 +193,9 @@ impl Component {
         self.bbox.y1 += y;
         self.bbox.x2 += x;
         self.bbox.y2 += y;
+        for pin in &mut self.pins{
+            pin.move_pin(x, y);
+        }
         self.bbox.recenter();
     }
     pub fn rotate_comp(&mut self, delta: i32) {
@@ -158,6 +203,9 @@ impl Component {
         self.rotation += delta ;
         self.rotation %= 360;
         self.bbox.rotate(delta.as_f64());
+        for pin in &mut self.pins{
+            pin.bbox.rotate_around_point(delta.as_f64(), self.bbox.centerx, self.bbox.centery);
+        }
     }
     pub fn get_width(&self) -> usize {
         return self.bbox.get_width();

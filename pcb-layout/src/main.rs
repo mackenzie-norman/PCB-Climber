@@ -1,8 +1,8 @@
 use std::{cmp::Ordering, process::ChildStdin, vec};
 mod plcmnt;
 use num::ToPrimitive;
-use plcmnt::{hpwl, is_valid, Bbox, Component, Placement};
-use rand::prelude::*;
+use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin};
+use rand::{prelude::*, seq::index::IndexVecIntoIter};
 use plotters::prelude::*;
 
 fn random_rotation() -> i32 {
@@ -56,6 +56,15 @@ impl Individual {
             let text_loc = ((i.bbox.x1 + padding )*scale  , (i.bbox.centery + padding) * scale );
             backend.draw_rect(ul,br , &RGBColor(rgb,rgb,128), true);
             backend.draw_text(&i.refdes,&style, text_loc );
+            for p in &i.pins{
+                
+                let ul  =((p.bbox.x1 + padding)*scale , (p.bbox.y2 + padding)*scale);
+                let br = ((p.bbox.x2+ padding)*scale, (p.bbox.y1+ padding)*scale);
+                let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
+                let text_loc = ((p.bbox.x1 + padding )*scale  , (p.bbox.centery + padding) * scale );
+                backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
+                backend.draw_text(&p.refdes,&style, text_loc );
+            }
         } 
         let _ = backend.present();
 
@@ -227,23 +236,28 @@ impl Individual {
 
 fn main() -> Result<(), Box<dyn std::error::Error>>{
     let placement_area = Bbox::new(0, 36, 0, 36);
+    let pin_boxx = Bbox::new(0, 1, 0,1);
+    let base_pin = Pin{refdes :"C1".to_string(), net: 0, bbox:pin_boxx };
     let boxx = Bbox::new(0, 2, 0, 4);
     let mut c1 = Component {
         refdes: "C1".to_string(),
         bbox: boxx,
         rotation: 0,
+        pins : vec![base_pin]
     };
     let box2 = Bbox::new(32, 36, 34, 36);
     let mut c2 = Component {
         refdes: "C2".to_string(),
         bbox: box2,
         rotation: 0,
+        pins : Vec::new()
     };
     let box3 = Bbox::new(4, 13, 0, 6);
     let mut c3 = Component {
         refdes: "C3".to_string(),
         bbox: box3,
         rotation: 0,
+        pins : Vec::new()
     };
     let mut c4 = c2.clone();
     c4.refdes = "C4".to_string();
@@ -283,7 +297,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     //println!("{}", id.score());
     //id.swap(1, 3);
     //id.rotate(1, 90);
-    for _ in 0..10000 {
+    for _ in 0..1000 {
         for ind in &mut population{
             ind.mutate();
         }
