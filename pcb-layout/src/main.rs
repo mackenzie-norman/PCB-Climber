@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, process::ChildStdin, vec};
 mod plcmnt;
 use num::ToPrimitive;
-use plcmnt::{hpwl, Bbox, Component, Placement};
+use plcmnt::{hpwl, is_valid, Bbox, Component, Placement};
 use rand::prelude::*;
 use plotters::prelude::*;
 
@@ -28,16 +28,36 @@ impl Individual {
             pl_area : pl.placement_area
         }
     }
-    fn plot(&self, backend :&mut BitMapBackend<'_>){
+    fn plot(&self, output_path: &str){
+        let padding: i32 = 10;
+        let scale: i32 = 12;
+        let pl_width:i32 = scale * (self.pl_area.get_width().to_i32().unwrap() + padding * 2);
+        let pl_height:i32 = scale * (self.pl_area.get_height().to_i32().unwrap() + padding * 2);
+        let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
+        let mut backend: BitMapBackend<'_> = BitMapBackend::new(output_path, (pl_width.try_into().unwrap() , pl_height.try_into().unwrap()));
+        //plot pcb
+        let ul  =((self.pl_area.x1 + padding)*scale , (self.pl_area.y2 + padding)*scale);
+        let br = ((self.pl_area.x2+ padding)*scale, (self.pl_area.y1+ padding)*scale);
+        let ur  =((self.pl_area.x2 + padding)*scale , (self.pl_area.y2 + padding)*scale);
+        let bl = ((self.pl_area.x1+ padding)*scale, (self.pl_area.y1+ padding)*scale);
+        backend.draw_rect(ul,br , &RGBAColor(0,255,0, 0.7), false);
+        backend.draw_text(&format!("{}, {}", self.pl_area.x2,self.pl_area.y2),&style, ur );
+        backend.draw_text(&format!("{}, {}", self.pl_area.x1, self.pl_area.y1),&style, bl );
+
         let mut rgb = 0;
         for i in &self.comp_list{
             let mut rng = rand::rng();
             rgb += 30;
             rgb %= 254;
             //let x = ;
-            backend.draw_rect((i.bbox.x1, i.bbox.y2), (i.bbox.x2, i.bbox.y1), &RGBColor(rgb,rgb,128), true);
+            let ul  =((i.bbox.x1 + padding)*scale , (i.bbox.y2 + padding)*scale);
+            let br = ((i.bbox.x2+ padding)*scale, (i.bbox.y1+ padding)*scale);
+            let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
+            let text_loc = ((i.bbox.x1 + padding )*scale  , (i.bbox.centery + padding) * scale );
+            backend.draw_rect(ul,br , &RGBColor(rgb,rgb,128), true);
+            backend.draw_text(&i.refdes,&style, text_loc );
         } 
-
+        let _ = backend.present();
 
     }
     
@@ -107,7 +127,7 @@ impl Individual {
     }
 
     fn score(& self) -> usize {
-        hpwl(& self.comp_list)
+        is_valid(& self.comp_list ) * hpwl(& self.comp_list)
     }
 
     fn rotate(&mut self, a: usize, rotation: i32) -> bool {
@@ -128,7 +148,7 @@ impl Individual {
         if !okay {
             //println!("{}", "BAD".red());
             let a_comp = &mut (self.comp_list[a - 1]);
-            a_comp.rotate_comp(-1 * rotation);
+            a_comp.rotate_comp( 360 - rotation);
             return false;
             //a_comp.move_to(old_pos.0, old_pos.1);
 
@@ -156,7 +176,7 @@ impl Individual {
         let y1 = rng.random_range(0..self.pl_area.y2);
         let select_box: Bbox = Bbox::new( x1,  rng.random_range(x1..self.pl_area.x2), y1,  rng.random_range(y1..self.pl_area.y2));
         let mut non_selected_comps: Vec<& Component> = Vec::new();
-        let mut tmp_rf: Vec<&str> = Vec::new();
+        //let mut tmp_rf: Vec<&str> = Vec::new();
         for comp in &self.comp_list{
             if !comp.bbox.does_overlap(&select_box){
                 //tmp_rf.push(comp.refdes);
@@ -212,7 +232,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         bbox: boxx,
         rotation: 0,
     };
-    let box2 = Bbox::new(4, 8, 6, 8);
+    let box2 = Bbox::new(32, 36, 34, 36);
     let mut c2 = Component {
         refdes: "C2".to_string(),
         bbox: box2,
@@ -229,9 +249,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     let mut c5 = c2.clone();
     c5.refdes = "C5".to_string();
     c1.move_comp(6, 6);
-    c2.move_comp(6, 6);
-    c4.move_comp(0, 6);
-    c5.move_comp(10, 0);
+    //c2.move_comp(6, 6);
+    c4.move_comp(0, -6);
+    c5.move_comp(15, 2);
     c3.move_comp(6, 6);
     //c1.move_comp( 10, 11);
     //c1.rotate_comp(90);
@@ -252,13 +272,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     }
 
     
-    let mut backend: BitMapBackend<'_> = BitMapBackend::new("0.png", (pl_width.try_into().unwrap(), pl_height.try_into().unwrap()));
+    
     // And if we want SVG backend
     // let backend = SVGBackend::new("output.svg", (800, 600));
     //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
     let mut id = &mut population[0];
-    id.plot(&mut backend);
-    let _ = backend.present();
+    id.plot("0.png");
+    
     //println!("{}", id.score());
     //id.swap(1, 3);
     //id.rotate(1, 90);
@@ -288,13 +308,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     //println!("{}",(c1.string()))
     println!("{:?}", id.comp_list);
     println!("{}", id.score());
-    let mut backend: BitMapBackend<'_> = BitMapBackend::new("1.png", (100,100));
-    // And if we want SVG backend
-    // let backend = SVGBackend::new("output.svg", (800, 600));
-    //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
-    //let c = id.crossover(&id2);
-    id.plot(&mut backend);
-    backend.present()?;
+    println!("{}", is_valid(&id.comp_list));
+    
+    id.plot("1.png");
     
     Ok(())
 }

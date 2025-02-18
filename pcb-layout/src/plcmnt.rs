@@ -65,7 +65,8 @@ impl Bbox {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
     }
     pub fn does_overlap(&self, other: &Bbox) -> bool{
-        !(self.x2 < other.x1 || other.x2 < self.x1 || self.y2 < other.y1 || other.y2 < self.y1)
+        let no_overlap = !(self.x2 < other.x1 || other.x2 < self.x1 || self.y2 < other.y1 || other.y2 < self.y1) ;
+        no_overlap || (self.centerx == other.centerx && self.centery == other.centery)
 
     }
     /// Rotates around the x1,y1 to avoid nasty discretization issues.
@@ -91,6 +92,7 @@ impl Bbox {
         self.y1 = ll.1;
         self.x2 = ur.0;
         self.y2 = ur.1;
+        self.recenter();
     }
     /* 
     pub fn rotate(&mut self, angle: i32) {
@@ -152,6 +154,7 @@ impl Component {
         self.bbox.recenter();
     }
     pub fn rotate_comp(&mut self, delta: i32) {
+        self.bbox.recenter();
         self.rotation += delta ;
         self.rotation %= 360;
         self.bbox.rotate(delta.as_f64());
@@ -163,9 +166,11 @@ impl Component {
         return self.bbox.get_height();
     }
     pub fn move_to(&mut self, x: i32, y: i32) {
+        self.bbox.recenter();
         let delta_x = x - self.bbox.x1;
         let delta_y = y - self.bbox.y1;
         self.move_comp(delta_x, delta_y);
+        
     }
     pub fn get_center(& self) -> (i32, i32) {
         //self.bbox.recenter();
@@ -209,6 +214,17 @@ pub fn hpwl(comps: & Vec<Component>) -> usize {
     }
     let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
     return net_bbox.get_height() + net_bbox.get_width();
+}
+pub fn is_valid (comps: & Vec<Component>) -> usize {
+    let mut retur = 1;
+    for comp_i in comps{
+        for comp_j in comps{
+            if comp_i.refdes != comp_j.refdes && comp_i.bbox.does_overlap(&comp_j.bbox){
+                retur = 2;
+            }
+        }
+    }
+    retur
 }
 
 impl Placement {
