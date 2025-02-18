@@ -54,7 +54,7 @@ impl Individual {
             let br = ((i.bbox.x2+ padding)*scale, (i.bbox.y1+ padding)*scale);
             let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
             let text_loc = ((i.bbox.x1 + padding )*scale  , (i.bbox.centery + padding) * scale );
-            backend.draw_rect(ul,br , &RGBColor(rgb,rgb,128), true);
+            backend.draw_rect(ul,br , &RGBColor(129,133,137), true);
             backend.draw_text(&i.refdes,&style, text_loc );
             for p in &i.pins{
                 
@@ -62,7 +62,14 @@ impl Individual {
                 let br = ((p.bbox.x2+ padding)*scale, (p.bbox.y1+ padding)*scale);
                 let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
                 let text_loc = ((p.bbox.x1 + padding )*scale  , (p.bbox.centery + padding) * scale );
-                backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
+                if p.net == 0{
+
+                    backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
+                }
+                else{
+                    backend.draw_rect(ul,br , &RGBColor(255,1,1), true);
+
+                }
                 backend.draw_text(&p.refdes,&style, text_loc );
             }
         } 
@@ -236,21 +243,29 @@ impl Individual {
 
 fn main() -> Result<(), Box<dyn std::error::Error>>{
     let placement_area = Bbox::new(0, 36, 0, 36);
-    let pin_boxx = Bbox::new(0, 1, 0,1);
+    let pin_boxx = Bbox::new(0, 2, 0,1);
     let base_pin = Pin{refdes :"C1".to_string(), net: 0, bbox:pin_boxx };
+    let mut base_pin_2 = Pin{refdes :"C1".to_string(), net: 1, bbox:pin_boxx };
+    base_pin_2.move_pin(0, 3);
     let boxx = Bbox::new(0, 2, 0, 4);
     let mut c1 = Component {
         refdes: "C1".to_string(),
         bbox: boxx,
         rotation: 0,
-        pins : vec![base_pin]
+        pins : vec![base_pin.clone(), base_pin_2.clone()]
     };
-    let box2 = Bbox::new(32, 36, 34, 36);
+    let mut b_pin = base_pin.clone();
+    let mut b_pin2 = base_pin_2.clone();
+    b_pin.refdes = "C2".to_string();
+    b_pin2.refdes = "C2".to_string();
+    b_pin.move_pin(34, 32);
+    b_pin2.move_pin(34, 32);
+    let box2 = Bbox::new(34, 36, 32, 36);
     let mut c2 = Component {
         refdes: "C2".to_string(),
         bbox: box2,
         rotation: 0,
-        pins : Vec::new()
+        pins : vec![b_pin, b_pin2]
     };
     let box3 = Bbox::new(4, 13, 0, 6);
     let mut c3 = Component {
@@ -260,9 +275,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         pins : Vec::new()
     };
     let mut c4 = c2.clone();
-    c4.refdes = "C4".to_string();
+    c4.set_refdes("C4".to_string());
     let mut c5 = c2.clone();
-    c5.refdes = "C5".to_string();
+    c5.set_refdes("C5".to_string());
     c1.move_comp(6, 6);
     //c2.move_comp(6, 6);
     c4.move_comp(0, -6);

@@ -235,6 +235,13 @@ impl Component {
 
 
     }
+    pub fn set_refdes(& mut self, new_ref: String){
+        self.refdes = new_ref.clone();
+        for pin in &mut self.pins{
+            pin.refdes = new_ref.clone();
+        }
+
+    }
     pub fn is_negative( &self) -> bool{
         self.bbox.x1 < 0 || self.bbox.y1 < 0
     }
