@@ -4,7 +4,7 @@ use num::ToPrimitive;
 use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin, placement_area};
 use rand::{prelude::*, seq::index::IndexVecIntoIter};
 use plotters::prelude::*;
-
+use colored::Colorize;
 fn random_rotation() -> i32 {
     // Get an RNG:
     let mut rng = rand::rng();
@@ -299,55 +299,59 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         components: comps,
         placement_area: placement_area,
     };
-    let mut population: Vec<Individual> = Vec::new();
-    let pop_size = 100;
-    for i in 0..pop_size{
-        let pl_2 = pl.clone();
-        let mut id2 = Individual::new(pl_2);
-        population.push(id2);
+    let test_cases: Vec<(usize, i32)> = vec![(10, 10000), (20, 5000), (50,2000), (100,1000)];
+    for i in test_cases{
 
-    }
+        let mut population: Vec<Individual> = Vec::new();
+        let pop_size = i.0;
+        for _ in 0..pop_size{
+            let pl_2 = pl.clone();
+            let  id2 = Individual::new(pl_2);
+            population.push(id2);
+
+        }
 
     
     
-    // And if we want SVG backend
-    // let backend = SVGBackend::new("output.svg", (800, 600));
-    //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
-    let mut id = &mut population[0];
-    id.plot("0.png");
+        // And if we want SVG backend
+        // let backend = SVGBackend::new("output.svg", (800, 600));
+        //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
+        let mut id = &mut population[0];
+        id.plot("0.png");
     
-    //println!("{}", id.score());
-    //id.swap(1, 3);
-    //id.rotate(1, 90);
-    for _ in 0..1000 {
-        for ind in &mut population{
-            ind.mutate();
+        println!("Original Score: {}", id.score());
+        //id.swap(1, 3);
+        //id.rotate(1, 90);
+        for _ in 0..i.1 {
+            for ind in &mut population{
+                ind.mutate();
+            }
+            for i in (0..pop_size).step_by(2){
+                let parent_a: & Individual = &population[i];
+                let parent_b: & Individual = &population[i + 1];
+                let mut child_a: Individual =  parent_a.crossover(parent_b);
+                let mut child_b: Individual =  parent_b.crossover(parent_a);
+                population.push(child_a);
+                population.push(child_b);
+            }
+            population.sort_by(|a: &Individual, b: &Individual| { 
+                let a_s = (a.score()).clone();
+                let b_s = (b.score()).clone();
+                a_s.cmp(&b_s)}
+            );
+            population.truncate(pop_size);
         }
-        for i in (0..pop_size).step_by(2){
-            let parent_a: & Individual = &population[i];
-            let parent_b: & Individual = &population[i + 1];
-            let mut child_a: Individual =  parent_a.crossover(parent_b);
-            let mut child_b: Individual =  parent_b.crossover(parent_a);
-            population.push(child_a);
-            population.push(child_b);
-        }
-        population.sort_by(|a: &Individual, b: &Individual| { 
-            let a_s = (a.score()).clone();
-            let b_s = (b.score()).clone();
-            a_s.cmp(&b_s)}
-        );
-        population.truncate(pop_size);
+        /*
+        */
+        let mut id = &mut population[0];
+        //let mut id2 = &mut population[1];
+        //println!("{}",(c1.string()))
+        //println!("{:?}", id.comp_list);
+        println!("New Score: {}", id.score());
+        //println!("{}", is_valid(&id.comp_list));
+    
+        id.plot("1.png");
     }
-    /*
-    */
-    let mut id = &mut population[0];
-    //let mut id2 = &mut population[1];
-    //println!("{}",(c1.string()))
-    println!("{:?}", id.comp_list);
-    println!("{}", id.score());
-    println!("{}", is_valid(&id.comp_list));
-    
-    id.plot("1.png");
     
     Ok(())
 }
