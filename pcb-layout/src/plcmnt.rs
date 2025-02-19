@@ -103,7 +103,7 @@ impl Bbox {
         self.y1 = if ll.1 < ur.1{ ll.1} else { ur.1};
         self.x2 =  if ll.0 > ur.0{ ll.0} else { ur.0};
         self.y2 = if ll.1 > ur.1{ ll.1} else { ur.1};
-        self.recenter();
+        //self.recenter();
     }
     pub fn rotate_around_point(&mut self, angle_degrees: f64, centerx:i32, centery:i32)  {
         self.recenter();
@@ -216,6 +216,7 @@ impl Component {
         for pin in &mut self.pins{
             pin.bbox.rotate_around_point(delta.as_f64(), self.bbox.centerx, self.bbox.centery);
         }
+        self.bbox.recenter();
     }
     pub fn get_width(&self) -> usize {
         return self.bbox.get_width();
@@ -264,14 +265,18 @@ pub fn hpwl(comps: & Vec<Component>) -> u32 {
     let mut min_y = 100000;
     let mut pin_by_node: BTreeMap<i32, Vec<&Pin>> = BTreeMap::new();
     let mut total_wl = 0;
+    let ignore_gnd = true;
     for i in comps {
         for pin in &i.pins{
+            if ignore_gnd && pin.net != 0{
+
             if pin_by_node.contains_key(&pin.net){
                 let new_vec =pin_by_node.get_mut(&pin.net).unwrap();
                 new_vec.push(pin);
                 //pin_by_node.insert(pin.net, new_vec);
             }else{
                 pin_by_node.insert(pin.net, vec![pin]);
+            }
             }
         }
     }

@@ -1,4 +1,5 @@
 use std::{cmp::Ordering, process::ChildStdin, vec};
+use std::time::Instant;
 mod plcmnt;
 use num::ToPrimitive;
 use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin, placement_area};
@@ -294,12 +295,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     //for i in 1..2000{ c1.rotate_comp(90);};
     let pl_width = placement_area.get_width();
     let pl_height = placement_area.get_height();
-    let comps: Vec<Component> = vec![c1,c2,c3,c4,c5];
+    c3.rotate_comp(180);
+    //c3.rotate_comp(90);
+    let comps: Vec<Component> = vec![c1, c2,c3,c4, c5];
+    
     let pl = Placement {
         components: comps,
         placement_area: placement_area,
     };
-    let test_cases: Vec<(usize, i32)> = vec![(10, 10000), (20, 5000), (50,2000), (100,1000)];
+    let pl_2 = pl.clone();
+    let  id2 = Individual::new(pl_2);
+    id2.plot("0.png");
+    
+    let test_cases: Vec<(usize, i32)> = vec![(10, 100000), (20, 50000), (50,20000), (100,10000), (200, 5000)];
     for i in test_cases{
 
         let mut population: Vec<Individual> = Vec::new();
@@ -318,8 +326,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
         let mut id = &mut population[0];
         id.plot("0.png");
-    
+        println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, i.1).green());
         println!("Original Score: {}", id.score());
+        let now = Instant::now();
         //id.swap(1, 3);
         //id.rotate(1, 90);
         for _ in 0..i.1 {
@@ -344,14 +353,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         /*
         */
         let mut id = &mut population[0];
-        //let mut id2 = &mut population[1];
-        //println!("{}",(c1.string()))
-        //println!("{:?}", id.comp_list);
         println!("New Score: {}", id.score());
-        //println!("{}", is_valid(&id.comp_list));
     
-        id.plot("1.png");
+        id.plot(&format!("test-{}x{}.png", pop_size, i.1));
+        let elapsed_time = now.elapsed();
+        println!("Test took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
+        println!("![{}]({})",&format!("test-{}x{}.png", pop_size, i.1),&format!("test-{}x{}.png", pop_size, i.1) );
+        println!("{}", format!("+++++++Test Over+++++++").green());
+        println!("");
     }
     
+    /* */
     Ok(())
 }
