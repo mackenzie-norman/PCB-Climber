@@ -24,10 +24,10 @@ pub struct Bbox {
 impl Bbox {
     pub fn new(x1: i32, x2: i32, y1: i32, y2: i32) -> Bbox {
         Bbox {
-            x1: x1,
-            x2: x2,
-            y1: y1,
-            y2: y2,
+            x1,
+            x2,
+            y1,
+            y2,
             centerx: x1 + ((x1 - x2).abs() / 2),
             centery: y1 + ((y1 - y2).abs() / 2),
         }
@@ -38,16 +38,16 @@ impl Bbox {
     }
     
     pub fn get_width(&self) -> usize {
-        return (self.x1 - self.x2).unsigned_abs().try_into().unwrap();
+        (self.x1 - self.x2).unsigned_abs().try_into().unwrap()
     }
     pub fn get_height(&self) -> usize {
-        return (self.y1 - self.y2).unsigned_abs().try_into().unwrap();
+        (self.y1 - self.y2).unsigned_abs().try_into().unwrap()
     }
     pub fn get_width_fl(&self) -> u32 {
-        return (self.x1 - self.x2).unsigned_abs();
+        (self.x1 - self.x2).unsigned_abs()
     }
     pub fn get_height_fl(&self) -> u32 {
-        return (self.y1 - self.y2).unsigned_abs();
+        (self.y1 - self.y2).unsigned_abs()
     }
     pub fn as_btree(&self, disc: i32, value: usize) -> BTreeMap<(usize, usize), usize> {
         let mut ret_btree: BTreeMap<(usize, usize), usize> = BTreeMap::new();
@@ -191,12 +191,12 @@ pub struct Component {
 }
 impl Component {
     fn string(&self) -> String {
-        return self.refdes.clone()
+        self.refdes.clone()
             + " at ("
             + &self.bbox.centerx.to_string()
             + ","
             + &self.bbox.centery.to_string()
-            + ")";
+            + ")"
     }
     pub fn move_comp(&mut self, x: i32, y: i32) {
         self.bbox.x1 += x;
@@ -219,10 +219,10 @@ impl Component {
         self.bbox.recenter();
     }
     pub fn get_width(&self) -> usize {
-        return self.bbox.get_width();
+        self.bbox.get_width()
     }
     pub fn get_height(&self) -> usize {
-        return self.bbox.get_height();
+        self.bbox.get_height()
     }
     pub fn move_to(&mut self, x: i32, y: i32) {
         self.bbox.recenter();
@@ -270,12 +270,12 @@ pub fn hpwl(comps: & Vec<Component>) -> u32 {
         for pin in &i.pins{
             if ignore_gnd && pin.net != 0{
 
-            if pin_by_node.contains_key(&pin.net){
+            if let std::collections::btree_map::Entry::Vacant(e) = pin_by_node.entry(pin.net) {
+                e.insert(vec![pin]);
+            } else {
                 let new_vec =pin_by_node.get_mut(&pin.net).unwrap();
                 new_vec.push(pin);
                 //pin_by_node.insert(pin.net, new_vec);
-            }else{
-                pin_by_node.insert(pin.net, vec![pin]);
             }
             }
         }
@@ -339,7 +339,7 @@ pub fn placement_area(comps: & Vec<Component>) -> u32 {
     }
     
     //println!("{:?}", net_bbox);
-    return ((max_x - min_x) * (max_y -min_y)).try_into().unwrap();
+    ((max_x - min_x) * (max_y -min_y)).try_into().unwrap()
 }
 pub fn is_valid (comps: & Vec<Component>) -> u32 {
     let mut retur = 1;
@@ -379,6 +379,6 @@ impl Placement {
             .unwrap();
         x_end += 10;
         y_end += 10;
-        return (x_end * y_end, disc);
+        (x_end * y_end, disc)
     }
 }

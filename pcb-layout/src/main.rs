@@ -1,9 +1,9 @@
-use std::{cmp::Ordering, process::ChildStdin, vec};
+use std::vec;
 use std::time::Instant;
 mod plcmnt;
 use num::ToPrimitive;
 use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin, placement_area};
-use rand::{prelude::*, seq::index::IndexVecIntoIter};
+use rand::prelude::*;
 use plotters::prelude::*;
 use colored::Colorize;
 fn random_rotation() -> i32 {
@@ -47,7 +47,7 @@ impl Individual {
 
         let mut rgb = 0;
         for i in &self.comp_list{
-            let mut rng = rand::rng();
+            let rng = rand::rng();
             rgb += 30;
             rgb %= 254;
             //let x = ;
@@ -97,10 +97,10 @@ impl Individual {
             //println!("{}", "BAD".red());
             let a_comp = &mut (self.comp_list[a - 1]);
             a_comp.move_to(old_pos.0, old_pos.1);
-            return false;
+            false
 
         }else{
-            return true;
+            true
             //println!("{}", "GOOD".green());
         }
     }
@@ -165,12 +165,12 @@ impl Individual {
         } 
         if !okay {
             let a_comp = &mut (self.comp_list[a - 1]);
-            a_comp.rotate_comp( -1* rotation);
-            return false;
+            a_comp.rotate_comp( -rotation);
+            false
             //a_comp.move_to(old_pos.0, old_pos.1);
 
         }else{
-            return true;
+            true
             //println!("{}", "GOOD".green());
         }
 
@@ -183,7 +183,7 @@ impl Individual {
             i +=1;
 
         }
-        return 0;
+        0
         
     }
     fn crossover(&self, other : & Individual) -> Individual{
@@ -200,7 +200,7 @@ impl Individual {
                 for oth_comp in &self.comp_list{
                     if comp.refdes == oth_comp.refdes{
 
-                        non_selected_comps.push(&oth_comp);
+                        non_selected_comps.push(oth_comp);
                     }
                 }
             }
@@ -263,7 +263,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     b_pin2.move_pin(34, 32);
     b_pin2.net = 2;
     let box2 = Bbox::new(34, 36, 32, 36);
-    let mut c2 = Component {
+    let c2 = Component {
         refdes: "C2".to_string(),
         bbox: box2,
         rotation: 0,
@@ -301,7 +301,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     
     let pl = Placement {
         components: comps,
-        placement_area: placement_area,
+        placement_area,
     };
     let pl_2 = pl.clone();
     let  id2 = Individual::new(pl_2);
@@ -324,7 +324,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         // And if we want SVG backend
         // let backend = SVGBackend::new("output.svg", (800, 600));
         //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
-        let mut id = &mut population[0];
+        let id = &mut population[0];
         id.plot("0.png");
         println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, i.1).green());
         println!("Original Score: {}", id.score());
@@ -338,29 +338,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
             for i in (0..pop_size).step_by(2){
                 let parent_a: & Individual = &population[i];
                 let parent_b: & Individual = &population[i + 1];
-                let mut child_a: Individual =  parent_a.crossover(parent_b);
-                let mut child_b: Individual =  parent_b.crossover(parent_a);
+                let child_a: Individual =  parent_a.crossover(parent_b);
+                let child_b: Individual =  parent_b.crossover(parent_a);
                 population.push(child_a);
                 population.push(child_b);
             }
             population.sort_by(|a: &Individual, b: &Individual| { 
-                let a_s = (a.score()).clone();
-                let b_s = (b.score()).clone();
+                let a_s = (a.score());
+                let b_s = (b.score());
                 a_s.cmp(&b_s)}
             );
             population.truncate(pop_size);
         }
         /*
         */
-        let mut id = &mut population[0];
+        let id = &mut population[0];
         println!("New Score: {}", id.score());
     
         id.plot(&format!("test-{}x{}.png", pop_size, i.1));
         let elapsed_time = now.elapsed();
         println!("Test took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
         println!("![{}]({})",&format!("test-{}x{}.png", pop_size, i.1),&format!("test-{}x{}.png", pop_size, i.1) );
-        println!("{}", format!("+++++++Test Over+++++++").green());
-        println!("");
+        println!("{}", "+++++++Test Over+++++++".to_string().green());
+        println!();
     }
     
     /* */
