@@ -43,11 +43,11 @@ impl Bbox {
     pub fn get_height(&self) -> usize {
         return (self.y1 - self.y2).unsigned_abs().try_into().unwrap();
     }
-    pub fn get_width_fl(&self) -> u32 {
-        return (self.x1 - self.x2).unsigned_abs();
+    pub fn get_width_fl(&self) -> f64 {
+        return (self.x1 - self.x2).unsigned_abs().as_f64();
     }
-    pub fn get_height_fl(&self) -> u32 {
-        return (self.y1 - self.y2).unsigned_abs();
+    pub fn get_height_fl(&self) -> f64 {
+        return (self.y1 - self.y2).unsigned_abs().as_f64();
     }
     pub fn as_btree(&self, disc: i32, value: usize) -> BTreeMap<(usize, usize), usize> {
         let mut ret_btree: BTreeMap<(usize, usize), usize> = BTreeMap::new();
@@ -257,13 +257,13 @@ impl Component {
     }
 }
 ///This assumes all comps are on the same net lol
-pub fn hpwl(comps: & Vec<Component>) -> u32 {
+pub fn hpwl(comps: & Vec<Component>) -> f64 {
     let mut max_x = -1000000000;
     let mut min_x = 100000;
     let mut max_y = -100000000;
     let mut min_y = 100000;
     let mut pin_by_node: BTreeMap<i32, Vec<&Pin>> = BTreeMap::new();
-    let mut total_wl = 0;
+    let mut total_wl = 0.0;
     for i in comps {
         for pin in &i.pins{
             if pin_by_node.contains_key(&pin.net){
@@ -297,7 +297,7 @@ pub fn hpwl(comps: & Vec<Component>) -> u32 {
     total_wl
 }
 /// This uses just max size (not chull which is more accurate)
-pub fn placement_area(comps: & Vec<Component>) -> u32 {
+pub fn placement_area(comps: & Vec<Component>) -> f64 {
     let mut max_x = 0;
     let mut min_x = 1000000;
     let mut max_y = 0;
@@ -334,7 +334,7 @@ pub fn placement_area(comps: & Vec<Component>) -> u32 {
     }
     
     //println!("{:?}", net_bbox);
-    return ((max_x - min_x) * (max_y -min_y)).try_into().unwrap();
+    return ((max_x.as_f64() - min_x.as_f64()) * (max_y.as_f64() -min_y.as_f64()));
 }
 pub fn is_valid (comps: & Vec<Component>) -> u32 {
     let mut retur = 1;

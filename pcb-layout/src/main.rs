@@ -142,8 +142,9 @@ impl Individual {
         
     }
 
-    fn score(& self) -> u32 {
-        is_valid(& self.comp_list ) * placement_area(& self.comp_list) * hpwl(& self.comp_list)
+    fn score(& self) -> f64 {
+        println!("{},{}", placement_area(& self.comp_list) , hpwl(& self.comp_list));
+        is_valid(& self.comp_list ).as_f64() * placement_area(& self.comp_list) + hpwl(& self.comp_list)
     }
 
     fn rotate(&mut self, a: usize, rotation: i32) -> bool {
@@ -319,7 +320,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     //println!("{}", id.score());
     //id.swap(1, 3);
     //id.rotate(1, 90);
-    for _ in 0..1000 {
+    for _ in 0..1 {
         for ind in &mut population{
             ind.mutate();
         }
@@ -334,7 +335,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         population.sort_by(|a: &Individual, b: &Individual| { 
             let a_s = (a.score()).clone();
             let b_s = (b.score()).clone();
-            a_s.cmp(&b_s)}
+            
+           a_s.total_cmp(&b_s)
+        }
         );
         population.truncate(pop_size);
     }
@@ -345,7 +348,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     //println!("{}",(c1.string()))
     println!("{:?}", id.comp_list);
     println!("{}", id.score());
-    println!("{}", is_valid(&id.comp_list));
+    //println!("{}", is_valid(&id.comp_list));
     
     id.plot("1.png");
     
