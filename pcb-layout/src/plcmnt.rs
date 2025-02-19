@@ -43,6 +43,12 @@ impl Bbox {
     pub fn get_height(&self) -> usize {
         return (self.y1 - self.y2).unsigned_abs().try_into().unwrap();
     }
+    pub fn get_width_fl(&self) -> u32 {
+        return (self.x1 - self.x2).unsigned_abs();
+    }
+    pub fn get_height_fl(&self) -> u32 {
+        return (self.y1 - self.y2).unsigned_abs();
+    }
     pub fn as_btree(&self, disc: i32, value: usize) -> BTreeMap<(usize, usize), usize> {
         let mut ret_btree: BTreeMap<(usize, usize), usize> = BTreeMap::new();
         let start_x = self.x1 / disc;
@@ -69,6 +75,10 @@ impl Bbox {
         let no_overlap = !(self.x2 < other.x1 || other.x2 < self.x1 || self.y2 < other.y1 || other.y2 < self.y1) ;
         no_overlap || (self.centerx == other.centerx && self.centery == other.centery)
 
+    }
+    pub fn get_center(& self) -> (i32, i32) {
+        //self.bbox.recenter();
+        (self.centerx, self.centery)
     }
     /// Rotates around the x1,y1 to avoid nasty discretization issues.
     /// 
@@ -247,13 +257,27 @@ impl Component {
     }
 }
 ///This assumes all comps are on the same net lol
-pub fn hpwl(comps: & Vec<Component>) -> usize {
+pub fn hpwl(comps: & Vec<Component>) -> u32 {
     let mut max_x = -1000000000;
     let mut min_x = 100000;
     let mut max_y = -100000000;
     let mut min_y = 100000;
+    let mut pin_by_node: BTreeMap<i32, Vec<&Pin>> = BTreeMap::new();
+    let mut total_wl = 0;
     for i in comps {
-        let (x, y) = i.get_center();
+        for pin in &i.pins{
+            if pin_by_node.contains_key(&pin.net){
+                let new_vec =pin_by_node.get_mut(&pin.net).unwrap();
+                new_vec.push(pin);
+                //pin_by_node.insert(pin.net, new_vec);
+            }else{
+                pin_by_node.insert(pin.net, vec![pin]);
+            }
+        }
+    }
+    for pins in pin_by_node.values(){
+        for i in pins{
+        let (x, y) = i.bbox.get_center();
         if x > max_x {
             max_x = x
         };
@@ -268,14 +292,56 @@ pub fn hpwl(comps: & Vec<Component>) -> usize {
         };
     }
     let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
-    return net_bbox.get_height() + net_bbox.get_width();
+    total_wl += net_bbox.get_height_fl() + net_bbox.get_width_fl();
+    }
+    total_wl
 }
-pub fn is_valid (comps: & Vec<Component>) -> usize {
+/// This uses just max size (not chull which is more accurate)
+pub fn placement_area(comps: & Vec<Component>) -> u32 {
+    let mut max_x = 0;
+    let mut min_x = 1000000;
+    let mut max_y = 0;
+    let mut min_y = 1000000;
+    for i in comps {
+        //TODO         
+        let (x, y) = (i.bbox.x1, i.bbox.y1);
+        if x > max_x {
+            max_x = x
+        };
+        if y > max_y {
+            max_y = y
+        };
+        if x < min_x {
+            min_x = x
+        };
+        if y < min_y {
+            min_y = y
+        };
+
+        let (x, y) = (i.bbox.x2, i.bbox.y2);
+        if x > max_x {
+            max_x = x
+        };
+        if y > max_y {
+            max_y = y
+        };
+        if x < min_x {
+            min_x = x
+        };
+        if y < min_y {
+            min_y = y
+        };
+    }
+    
+    //println!("{:?}", net_bbox);
+    return ((max_x - min_x) * (max_y -min_y)).try_into().unwrap();
+}
+pub fn is_valid (comps: & Vec<Component>) -> u32 {
     let mut retur = 1;
     for comp_i in comps{
         for comp_j in comps{
             if comp_i.refdes != comp_j.refdes && comp_i.bbox.does_overlap(&comp_j.bbox){
-                retur = 2;
+                retur = 10000;
             }
         }
     }

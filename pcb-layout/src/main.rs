@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, process::ChildStdin, vec};
 mod plcmnt;
 use num::ToPrimitive;
-use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin};
+use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin, placement_area};
 use rand::{prelude::*, seq::index::IndexVecIntoIter};
 use plotters::prelude::*;
 
@@ -62,7 +62,7 @@ impl Individual {
                 let br = ((p.bbox.x2+ padding)*scale, (p.bbox.y1+ padding)*scale);
                 let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
                 let text_loc = ((p.bbox.x1 + padding )*scale  , (p.bbox.centery + padding) * scale );
-                if p.net == 0{
+                if p.net != 0{
 
                     backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
                 }
@@ -70,7 +70,7 @@ impl Individual {
                     backend.draw_rect(ul,br , &RGBColor(255,1,1), true);
 
                 }
-                backend.draw_text(&p.refdes,&style, text_loc );
+                backend.draw_text(&format!("{}.{}", &p.refdes,&p.net) ,&style, text_loc );
             }
         } 
         let _ = backend.present();
@@ -142,8 +142,8 @@ impl Individual {
         
     }
 
-    fn score(& self) -> usize {
-        is_valid(& self.comp_list ) * hpwl(& self.comp_list)
+    fn score(& self) -> u32 {
+        is_valid(& self.comp_list ) * placement_area(& self.comp_list) * hpwl(& self.comp_list)
     }
 
     fn rotate(&mut self, a: usize, rotation: i32) -> bool {
@@ -260,6 +260,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     b_pin2.refdes = "C2".to_string();
     b_pin.move_pin(34, 32);
     b_pin2.move_pin(34, 32);
+    b_pin2.net = 2;
     let box2 = Bbox::new(34, 36, 32, 36);
     let mut c2 = Component {
         refdes: "C2".to_string(),
@@ -267,16 +268,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
         rotation: 0,
         pins : vec![b_pin, b_pin2]
     };
+    let mut base_pin = Pin{refdes :"C3".to_string(), net: 0, bbox:pin_boxx };
+    base_pin.move_pin(11, 5);
+    let mut base_pin_2 = Pin{refdes :"C3".to_string(), net: 1, bbox:pin_boxx };
+    base_pin_2.move_pin(7, 5);
+    let mut base_pin_3 = Pin{refdes :"C3".to_string(), net: 2, bbox:pin_boxx };
+    base_pin_3.move_pin(4, 0);
     let box3 = Bbox::new(4, 13, 0, 6);
     let mut c3 = Component {
         refdes: "C3".to_string(),
         bbox: box3,
         rotation: 0,
-        pins : Vec::new()
+        pins : vec![base_pin.clone(), base_pin_2.clone(), base_pin_3]
     };
     let mut c4 = c2.clone();
     c4.set_refdes("C4".to_string());
-    let mut c5 = c2.clone();
+    let mut c5 = c1.clone();
     c5.set_refdes("C5".to_string());
     c1.move_comp(6, 6);
     //c2.move_comp(6, 6);
