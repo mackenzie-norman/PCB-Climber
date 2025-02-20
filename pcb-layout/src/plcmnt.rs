@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use num::{integer::gcd, ToPrimitive};
 use plotters::prelude::LogScalable;
 use std::collections::BTreeMap;

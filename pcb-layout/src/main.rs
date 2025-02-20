@@ -41,22 +41,17 @@ impl Individual {
         let br = ((self.pl_area.x2+ padding)*scale, (self.pl_area.y1+ padding)*scale);
         let ur  =((self.pl_area.x2 + padding)*scale , (self.pl_area.y2 + padding)*scale);
         let bl = ((self.pl_area.x1+ padding)*scale, (self.pl_area.y1+ padding)*scale);
-        backend.draw_rect(ul,br , &RGBAColor(0,255,0, 0.7), false);
-        backend.draw_text(&format!("{}, {}", self.pl_area.x2,self.pl_area.y2),&style, ur );
-        backend.draw_text(&format!("{}, {}", self.pl_area.x1, self.pl_area.y1),&style, bl );
+        let _ = backend.draw_rect(ul,br , &RGBAColor(0,255,0, 0.7), false);
+        let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x2,self.pl_area.y2),&style, ur );
+        let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x1, self.pl_area.y1),&style, bl );
 
-        let mut rgb = 0;
         for i in &self.comp_list{
-            let rng = rand::rng();
-            rgb += 30;
-            rgb %= 254;
-            //let x = ;
             let ul  =((i.bbox.x1 + padding)*scale , (i.bbox.y2 + padding)*scale);
             let br = ((i.bbox.x2+ padding)*scale, (i.bbox.y1+ padding)*scale);
             let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
             let text_loc = ((i.bbox.x1 + padding )*scale  , (i.bbox.centery + padding) * scale );
-            backend.draw_rect(ul,br , &RGBColor(129,133,137), true);
-            backend.draw_text(&i.refdes,&style, text_loc );
+            let _ = backend.draw_rect(ul,br , &RGBColor(129,133,137), true);
+            let _ = backend.draw_text(&i.refdes,&style, text_loc );
             for p in &i.pins{
                 
                 let ul  =((p.bbox.x1 + padding)*scale , (p.bbox.y2 + padding)*scale);
@@ -65,13 +60,13 @@ impl Individual {
                 let text_loc = ((p.bbox.x1 + padding )*scale  , (p.bbox.centery + padding) * scale );
                 if p.net != 0{
 
-                    backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
+                    let _ = backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
                 }
                 else{
-                    backend.draw_rect(ul,br , &RGBColor(255,1,1), true);
+                    let _ = backend.draw_rect(ul,br , &RGBColor(255,1,1), true);
 
                 }
-                backend.draw_text(&format!("{}.{}", &p.refdes,&p.net) ,&style, text_loc );
+                let _ = backend.draw_text(&format!("{}.{}", &p.refdes,&p.net) ,&style, text_loc );
             }
         } 
         let _ = backend.present();
@@ -293,8 +288,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     c3.move_comp(6, 6);
     //c1.move_comp( 10, 11);
     //for i in 1..2000{ c1.rotate_comp(90);};
-    let pl_width = placement_area.get_width();
-    let pl_height = placement_area.get_height();
     c3.rotate_comp(180);
     //c3.rotate_comp(90);
     let comps: Vec<Component> = vec![c1, c2,c3,c4, c5];
@@ -306,8 +299,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     let pl_2 = pl.clone();
     let  id2 = Individual::new(pl_2);
     id2.plot("0.png");
-    
-    let test_cases: Vec<(usize, i32)> = vec![(10, 100000), (20, 50000), (50,20000), (100,10000), (200, 5000)];
+    let gen_mult = 100;
+    let test_cases: Vec<(usize, i32)> = vec![(10, 10000 * gen_mult ), (20, 5000 * gen_mult), (50,2000 * gen_mult), (100,1000 * gen_mult), (200, 500 * gen_mult), (500,200 * gen_mult)];
     for i in test_cases{
 
         let mut population: Vec<Individual> = Vec::new();
@@ -344,8 +337,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
                 population.push(child_b);
             }
             population.sort_by(|a: &Individual, b: &Individual| { 
-                let a_s = (a.score());
-                let b_s = (b.score());
+                let a_s = a.score();
+                let b_s = b.score();
                 a_s.cmp(&b_s)}
             );
             population.truncate(pop_size);
