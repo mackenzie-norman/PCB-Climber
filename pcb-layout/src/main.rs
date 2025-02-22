@@ -3,6 +3,8 @@ use std::time::Instant;
 mod plcmnt;
 use num::ToPrimitive;
 use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin, placement_area};
+mod kicad_parse;
+use kicad_parse::{parse_file};
 use rand::prelude::*;
 use plotters::prelude::*;
 use colored::Colorize;
@@ -236,8 +238,8 @@ impl Individual {
         }
     }
 }
-
-fn main() -> Result<(), Box<dyn std::error::Error>>{
+fn tester(){
+    
     let placement_area = Bbox::new(0, 36, 0, 36);
     let pin_boxx = Bbox::new(0, 2, 0,1);
     let base_pin = Pin{refdes :"C1".to_string(), net: 0, bbox:pin_boxx };
@@ -357,5 +359,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>>{
     }
     
     /* */
-    Ok(())
+}
+fn main() {
+    let pl = parse_file();
+    let id = Individual::new(pl);
+    id.plot("tester.png");
 }
