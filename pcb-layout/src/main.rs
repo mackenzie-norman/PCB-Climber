@@ -362,6 +362,7 @@ fn tester(){
 }
 fn main() {
     let pl = parse_file();
-    let id = Individual::new(pl);
+    let mut id = Individual::new(pl);
+    //id.mutate();
     id.plot("tester.png");
 }

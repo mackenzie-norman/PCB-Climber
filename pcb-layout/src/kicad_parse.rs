@@ -76,7 +76,7 @@ pub fn parse_file() -> Placement {
             let refdes_str = refdes_vec[refdes_vec.len() -1 ].replace("\"", "").trim().to_string();
             //println!("{}", refdes_str.clone());
             refdes = &refdes_str;
-            println!("{} at ({},{}) ", refdes_str, x1,y1);
+            //println!("{} at ({},{}) ", refdes_str, x1,y1);
             let mut in_shape: bool = true;
             while in_shape{
                 while !line.contains("fp_line"){
@@ -84,9 +84,7 @@ pub fn parse_file() -> Placement {
                     line = content_iter.next().unwrap_or_else(||{ in_shape = false; "bad"} );
                     
                     if line.contains("pad"){ in_shape = false};
-                    if !in_shape{
-                        break;
-                    }
+                    
                 }
                 //now were in a shape
                 let start  = content_iter.next().unwrap().trim();
@@ -100,10 +98,38 @@ pub fn parse_file() -> Placement {
                     let (x, y )= parse_kicad_line_to_floats(start);
                     xs.push((x + x1).round());
                     ys.push((y + y1).round());
+                    let (x, y )= parse_kicad_line_to_floats(end);
+                    xs.push((x + x1).round());
+                    ys.push((y + y1).round());
 
                     //println!("{}, {}",x + x1 ,y+ y1);
                 }
             }
+            //now its pin time
+            //
+            while !line.contains("pad"){
+                line  = content_iter.next().unwrap();
+            }
+            if line.contains("pad"){
+                line  = content_iter.next().unwrap();
+                //println!("{}", line);
+                let (mut px1 , mut py1) = parse_kicad_line_to_floats(line);
+                px1 += x1;
+                py1 += y1;
+                line  = content_iter.next().unwrap();
+                let (mut px2 , mut py2) = parse_kicad_line_to_floats(line);
+                px2 += px1;
+                py2 += py1;
+                //let px2 =
+                //println!("{}, {}", px2, py2);
+                while !line.contains("net"){
+                    line  = content_iter.next().unwrap();
+                }
+                let net_v: Vec<&str> = line.trim().split(" ").collect();
+                let net = net_v[1].parse::<i32>().unwrap();
+                
+            }
+
             xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
             ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
             if ! xs.is_empty() {
@@ -113,11 +139,14 @@ pub fn parse_file() -> Placement {
                 if rotation != 0{
                     comp.rotate_comp(rotation);
                 }
-                println!("{:?}", comp);
+                //println!("{:?}", comp);
                 comp_vec.push(comp);
             }
             xs.clear();
             ys.clear();
+
+            
+
 
             //Bbox::new(xs[0], x2, y1, y2)
             //in_doc = line.contains("gr_rect");
