@@ -134,7 +134,7 @@ pub fn parse_file() -> Placement {
             ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
             if ! xs.is_empty() {
             //println!("{}, {}",, ys[ys.len()-1]);
-                let comp_bbox = Bbox::new(xs[0] as i32, xs[xs.len()-1] as i32, ys[0] as i32, ys[ys.len()-1] as i32);
+                let comp_bbox = Bbox::new(xs[0] , xs[xs.len()-1] , ys[0] , ys[ys.len()-1] );
                 let mut comp: Component = Component{refdes:refdes.to_string(), bbox: comp_bbox, rotation: 0, pins: Vec::new()};
                 if rotation != 0{
                     comp.rotate_comp(rotation);
@@ -156,6 +156,6 @@ pub fn parse_file() -> Placement {
         }
 
     }
-    Placement{ components: comp_vec, placement_area: Bbox::new(0,300,0,300)}
+    Placement{ components: comp_vec, placement_area: Bbox::new(0.0,300.0,0.0,300.0)}
     //println!("{:?}", net_map);
 }

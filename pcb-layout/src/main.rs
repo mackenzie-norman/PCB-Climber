@@ -32,6 +32,7 @@ impl Individual {
         }
     }
     fn plot(&self, output_path: &str){
+        /* 
         let padding: i32 = 10;
         let scale: i32 = 12;
         let pl_width:i32 = scale * (self.pl_area.get_width().to_i32().unwrap() + padding * 2);
@@ -72,13 +73,13 @@ impl Individual {
             }
         } 
         let _ = backend.present();
-
+        */
     }
     
-    fn move_comp(&mut self, a: usize,x:i32, y:i32) -> bool{
+    fn move_comp(&mut self, a: usize,x:f64, y:f64) -> bool{
         let a_comp = &mut (self.comp_list[a - 1]);
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
-        a_comp.move_to(x.to_i32().unwrap(), y.to_i32().unwrap());
+        a_comp.move_to(x, y);
         let a_comp = & (self.comp_list[a - 1]);
         let mut okay = a_comp.bbox.is_out_of_bounds(&self.pl_area);
         
@@ -132,15 +133,15 @@ impl Individual {
     fn move_to_new(&mut self, a: usize) {
         let mut rng = rand::rng();
         let qk_comp = self.comp_list[a - 1].bbox;
-        let x = rng.random_range( qk_comp.get_width().try_into().unwrap() .. self.pl_area.x2);
-        let y = rng.random_range(qk_comp.get_height().try_into().unwrap()..self.pl_area.y2);
+        let x = rng.random_range( qk_comp.get_width_fl() .. self.pl_area.x2);
+        let y = rng.random_range(qk_comp.get_height_fl() ..self.pl_area.y2);
         //We need to zero, so lets grab the coords and also hold on to them
         //let a: usize = 2;
         self.move_comp(a, x, y);
         
     }
 
-    fn score(& self) -> u32 {
+    fn score(& self) -> f64 {
         is_valid(& self.comp_list ) * placement_area(& self.comp_list) * hpwl(& self.comp_list)
     }
 
@@ -186,8 +187,8 @@ impl Individual {
     fn crossover(&self, other : & Individual) -> Individual{
         //assert!() // add assertion to ensure they are same size
         let mut rng = rand::rng();
-        let x1 = rng.random_range(0..self.pl_area.x2);
-        let y1 = rng.random_range(0..self.pl_area.y2);
+        let x1 = rng.random_range(0.0..self.pl_area.x2);
+        let y1 = rng.random_range(0.0..self.pl_area.y2);
         let select_box: Bbox = Bbox::new( x1,  rng.random_range(x1..self.pl_area.x2), y1,  rng.random_range(y1..self.pl_area.y2));
         let mut non_selected_comps: Vec<& Component> = Vec::new();
         //let mut tmp_rf: Vec<&str> = Vec::new();
@@ -238,6 +239,7 @@ impl Individual {
         }
     }
 }
+/* 
 fn tester(){
     
     let placement_area = Bbox::new(0, 36, 0, 36);
@@ -358,8 +360,9 @@ fn tester(){
         println!();
     }
     
-    /* */
+    
 }
+    */
 fn main() {
     let pl = parse_file();
     let mut id = Individual::new(pl);

@@ -14,16 +14,16 @@ pub fn gcd_of_vector(nums: &[usize]) -> usize {
 }
 #[derive(Debug , Copy, Clone)]
 pub struct Bbox {
-    pub x1: i32,
-    pub x2: i32,
-    pub y1: i32,
-    pub y2: i32,
-    pub centerx: i32,
-    pub centery: i32,
+    pub x1: f64,
+    pub x2: f64,
+    pub y1: f64,
+    pub y2: f64,
+    pub centerx: f64,
+    pub centery: f64,
 }
 
 impl Bbox {
-    pub fn new(x1: i32, x2: i32, y1: i32, y2: i32) -> Bbox {
+    pub fn new(x1: f64, x2: f64, y1: f64, y2: f64) -> Bbox {
         Bbox {
             x1,
             x2,
@@ -38,17 +38,17 @@ impl Bbox {
         self.centery = self.y1 + ((self.y1 - self.y2).abs() / 2);
     }
     
+    pub fn get_width_fl(&self) -> f64 {
+        (self.x1 - self.x2).abs()
+    }
+    pub fn get_height_fl(&self) -> f64 {
+        (self.y1 - self.y2).abs()
+    }/*
     pub fn get_width(&self) -> usize {
         (self.x1 - self.x2).unsigned_abs().try_into().unwrap()
     }
     pub fn get_height(&self) -> usize {
         (self.y1 - self.y2).unsigned_abs().try_into().unwrap()
-    }
-    pub fn get_width_fl(&self) -> u32 {
-        (self.x1 - self.x2).unsigned_abs()
-    }
-    pub fn get_height_fl(&self) -> u32 {
-        (self.y1 - self.y2).unsigned_abs()
     }
     pub fn as_btree(&self, disc: i32, value: usize) -> BTreeMap<(usize, usize), usize> {
         let mut ret_btree: BTreeMap<(usize, usize), usize> = BTreeMap::new();
@@ -69,6 +69,7 @@ impl Bbox {
         }
         ret_btree
     }
+    */
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
     }
@@ -77,7 +78,7 @@ impl Bbox {
         no_overlap || (self.centerx == other.centerx && self.centery == other.centery)
 
     }
-    pub fn get_center(& self) -> (i32, i32) {
+    pub fn get_center(& self) -> (f64, f64) {
         //self.bbox.recenter();
         (self.centerx, self.centery)
     }
@@ -87,7 +88,7 @@ impl Bbox {
         self.recenter();
         let angle_radians = angle_degrees * PI / 180.0;
 
-        let rotate_point = |x: i32, y: i32| -> (i32, i32) {
+        let rotate_point = |x: f64, y: f64| -> (f64, f64) {
             let dx = ( x - self.centerx  ) as f64;
             let dy = ( y - self.centery  ) as f64;
             let sin = angle_radians.sin();
@@ -95,7 +96,7 @@ impl Bbox {
 
             let new_x = dx *cos  - dy * sin;
             let new_y = dx * sin  + dy * cos;
-            (self.centerx + new_x.round() as i32, self.centery + new_y.round() as i32)
+            (self.centerx + new_x.round() as f64, self.centery + new_y.round() as f64)
         };
 
         let ll = rotate_point(self.x1, self.y1);
@@ -106,11 +107,11 @@ impl Bbox {
         self.y2 = if ll.1 > ur.1{ ll.1} else { ur.1};
         //self.recenter();
     }
-    pub fn rotate_around_point(&mut self, angle_degrees: f64, centerx:i32, centery:i32)  {
+    pub fn rotate_around_point(&mut self, angle_degrees: f64, centerx:f64, centery:f64)  {
         self.recenter();
         let angle_radians = angle_degrees * PI / 180.0;
 
-        let rotate_point = |x: i32, y: i32| -> (i32, i32) {
+        let rotate_point = |x: f64, y: f64| -> (f64, f64) {
             let dx = ( x - centerx  ) as f64;
             let dy = ( y - centery  ) as f64;
             let sin = angle_radians.sin();
@@ -118,7 +119,7 @@ impl Bbox {
 
             let new_x = dx *cos  - dy * sin;
             let new_y = dx * sin  + dy * cos;
-            (centerx + new_x.round() as i32, centery + new_y.round() as i32)
+            (centerx + new_x.round() as f64, centery + new_y.round() as f64)
         };
 
         let ll = rotate_point(self.x1, self.y1);
@@ -174,7 +175,7 @@ pub struct Pin{
 
 }
 impl Pin{
-    pub fn move_pin(&mut self, x: i32, y: i32) {
+    pub fn move_pin(&mut self, x: f64, y: f64) {
         self.bbox.x1 += x;
         self.bbox.y1 += y;
         self.bbox.x2 += x;
@@ -199,7 +200,7 @@ impl Component {
             + &self.bbox.centery.to_string()
             + ")"
     }
-    pub fn move_comp(&mut self, x: i32, y: i32) {
+    pub fn move_comp(&mut self, x: f64, y: f64) {
         self.bbox.x1 += x;
         self.bbox.y1 += y;
         self.bbox.x2 += x;
@@ -225,18 +226,18 @@ impl Component {
     pub fn get_height(&self) -> usize {
         self.bbox.get_height()
     }
-    pub fn move_to(&mut self, x: i32, y: i32) {
+    pub fn move_to(&mut self, x: f64, y: f64) {
         self.bbox.recenter();
         let delta_x = x - self.bbox.x1;
         let delta_y = y - self.bbox.y1;
         self.move_comp(delta_x, delta_y);
         
     }
-    pub fn get_center(& self) -> (i32, i32) {
+    pub fn get_center(& self) -> (f64, f64) {
         //self.bbox.recenter();
         (self.bbox.centerx, self.bbox.centery)
     }
-    pub fn try_move_to(& self, x: i32, y: i32 ) -> Bbox {
+    pub fn try_move_to(& self, x: f64, y: f64 ) -> Bbox {
         let delta_x = x - self.bbox.x1;
         let delta_y = y - self.bbox.y1;
         Bbox::new(
@@ -255,17 +256,17 @@ impl Component {
 
     }
     pub fn is_negative( &self) -> bool{
-        self.bbox.x1 < 0 || self.bbox.y1 < 0
+        self.bbox.x1 < 0.0 || self.bbox.y1 < 0.0
     }
 }
 ///This assumes all comps are on the same net lol
-pub fn hpwl(comps: & Vec<Component>) -> u32 {
-    let mut max_x = -1000000000;
-    let mut min_x = 100000;
-    let mut max_y = -100000000;
-    let mut min_y = 100000;
+pub fn hpwl(comps: & Vec<Component>) -> f64 {
+    let mut max_x = -1000000.0;
+    let mut min_x = 100000.0;
+    let mut max_y = -100000.0;
+    let mut min_y = 100000.0;
     let mut pin_by_node: BTreeMap<i32, Vec<&Pin>> = BTreeMap::new();
-    let mut total_wl = 0;
+    let mut total_wl = 0.0;
     let ignore_gnd = true;
     for i in comps {
         for pin in &i.pins{
@@ -303,11 +304,11 @@ pub fn hpwl(comps: & Vec<Component>) -> u32 {
     total_wl
 }
 /// This uses just max size (not chull which is more accurate)
-pub fn placement_area(comps: & Vec<Component>) -> u32 {
-    let mut max_x = 0;
-    let mut min_x = 1000000;
-    let mut max_y = 0;
-    let mut min_y = 1000000;
+pub fn placement_area(comps: & Vec<Component>) -> f64 {
+    let mut max_x = 0.0;
+    let mut min_x = 1000000.0;
+    let mut max_y = 0.0;
+    let mut min_y = 1000000.0;
     for i in comps {
         //TODO         
         let (x, y) = (i.bbox.x1, i.bbox.y1);
@@ -340,14 +341,14 @@ pub fn placement_area(comps: & Vec<Component>) -> u32 {
     }
     
     //println!("{:?}", net_bbox);
-    ((max_x - min_x) * (max_y -min_y)).try_into().unwrap()
+    ((max_x - min_x) * (max_y -min_y))
 }
-pub fn is_valid (comps: & Vec<Component>) -> u32 {
-    let mut retur = 1;
+pub fn is_valid (comps: & Vec<Component>) -> f64 {
+    let mut retur = 1.0;
     for comp_i in comps{
         for comp_j in comps{
             if comp_i.refdes != comp_j.refdes && comp_i.bbox.does_overlap(&comp_j.bbox){
-                retur = 10000;
+                retur = 10000.0;
             }
         }
     }
@@ -355,31 +356,4 @@ pub fn is_valid (comps: & Vec<Component>) -> u32 {
 }
 
 impl Placement {
-    pub fn array_size(&mut self) -> (usize, usize) {
-        let mut sizes = Vec::new();
-        for a in &self.components {
-            sizes.push(a.get_height());
-            sizes.push(a.get_width());
-        }
-        //println!("{:?}", sizes);
-        let disc = gcd_of_vector(&sizes);
-
-        let mut a: BTreeMap<(usize, usize), usize> = BTreeMap::new();
-        let mut count: usize = 1;
-        for c in &self.components {
-            let mut c_space = c.bbox.as_btree(disc.try_into().unwrap(), count);
-            a.append(&mut c_space);
-            count += 1usize;
-        }
-
-        let mut y_end: usize = (self.placement_area.y2 / disc.to_i32().unwrap())
-            .try_into()
-            .unwrap();
-        let mut x_end: usize = (self.placement_area.x2 / disc.to_i32().unwrap())
-            .try_into()
-            .unwrap();
-        x_end += 10;
-        y_end += 10;
-        (x_end * y_end, disc)
-    }
 }
