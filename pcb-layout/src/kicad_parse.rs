@@ -7,17 +7,18 @@ use std::collections::BTreeMap;
 
 use std::fs;
 
-fn parse_kicad_line_to_floats(passed_str: &str) -> (f64, f64) {
+fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
     let x_y_str = passed_str.trim().replace(")", "");
     let x_y_vec: Vec<&str> = x_y_str.split(" ").collect();
     if x_y_vec.len() < 3 {
         println!("{:?}", x_y_vec);
+        return None;
     }
 
-    (
+    Some((
         x_y_vec[1].parse::<f64>().unwrap(),
         x_y_vec[2].parse::<f64>().unwrap(),
-    )
+    ))
 }
 pub fn parse_file() -> Placement {
     // --snip--
@@ -63,7 +64,6 @@ pub fn parse_file() -> Placement {
             net_map.insert(net_idx, net_name);
         }
         if line.starts_with("\t(footprint ") {
-            //println!("{}","new Device");
             line = content_iter.next().unwrap();
             line = content_iter.next().unwrap();
             let x_y_str = content_iter.next().unwrap().trim_end().replace(")", "");
@@ -85,40 +85,65 @@ pub fn parse_file() -> Placement {
                 .replace("\"", "")
                 .trim()
                 .to_string();
+            println!("new Device: {}", refdes_str.clone());
             //println!("{}", refdes_str.clone());
             refdes = &refdes_str;
             //println!("{} at ({},{}) ", refdes_str, x1,y1);
             let mut in_shape: bool = true;
             while in_shape {
-                while !line.contains("fp_line") {
+                while !line.contains("fp_") {
+                    if refdes == "JP2" {
+                        println!("{}", line);
+                    }
                     //this might be where the loop ends?
                     line = content_iter.next().unwrap_or_else(|| {
                         in_shape = false;
                         "bad"
+
                     });
+                    
 
                     if line.contains("pad") {
                         in_shape = false
                     };
+                    if !in_shape{
+                        break;
+                    }
                 }
+
                 //now were in a shape
                 let start = content_iter.next().unwrap().trim();
                 let end = content_iter.next().unwrap().trim();
                 while !line.contains("layer") {
                     line = content_iter.next().unwrap();
+                    if line.contains("pad") {
+                        in_shape = false;
+                        break;
+                    };
                 }
                 if line.contains(footprint_layer) {
                     //parse and add start and end
-                    let (x, y) = parse_kicad_line_to_floats(start);
-                    xs.push(x + x1);
-                    ys.push(y + y1);
-                    let (x, y) = parse_kicad_line_to_floats(end);
-                    xs.push(x + x1);
-                    ys.push(y + y1);
-
-                    //println!("{}, {}",x + x1 ,y+ y1);
+                    let opt = parse_kicad_line_to_floats(start);
+                    match opt {
+                        Some(tple) => {
+                            let (x,y) = tple;
+                            xs.push(x + x1);
+                            ys.push(y + y1);
+                        }
+                        None    => ()
+                    }
+                    let opt = parse_kicad_line_to_floats(end);
+                    match opt {
+                        Some(tple) => {
+                            let (x,y) = tple;
+                            xs.push(x + x1);
+                            ys.push(y + y1);
+                        }
+                        None    => ()
+                    }
                 }
             }
+            println!("OUT OF SHAPE");
             //now its pin time
             //
             if !xs.is_empty() {
@@ -129,11 +154,14 @@ pub fn parse_file() -> Placement {
                     comp_bbox.rotate(rotation as f64);
                 }
                 let mut pin_vec: Vec<Pin> = Vec::new();
+                if refdes == "JP2" {
+                    println!("{}", line);
+                }
                 //outer pin loop
                 while !line.contains("model") && !line.starts_with("\t)") {
                     while !line.contains("pad ") {
                         line = content_iter.next().unwrap();
-                        if refdes == "C4" {
+                        if refdes == "JP2" {
                             println!("{}", line);
                         }
                         if line.contains("model") || line.starts_with("\t)") {
@@ -141,17 +169,22 @@ pub fn parse_file() -> Placement {
                         }
                     }
                     if line.contains("model") || line.starts_with("\t)") {
-                        println!("Found all pins for {}", refdes);
+                        if refdes == "JP2" {
+                            println!("{}", line);
+                        }
+                        println!("Found all {} pins for {}", pin_vec.len(), refdes);
                         break;
                     }
                     if line.contains("pad ") {
                         line = content_iter.next().unwrap();
                         //println!("{}", line);
-                        let (mut px1, mut py1) = parse_kicad_line_to_floats(line);
-                        px1 += comp_bbox.centerx;
-                        py1 += comp_bbox.centery;
+                        let (mut px1, mut py1) = parse_kicad_line_to_floats(line).unwrap();
+                        //px1 += comp_bbox.centerx;
+                        //py1 += comp_bbox.centery;
+                        px1 = x1;
+                        py1 = y1;
                         line = content_iter.next().unwrap();
-                        let (mut px2, mut py2) = parse_kicad_line_to_floats(line);
+                        let (mut px2, mut py2) = parse_kicad_line_to_floats(line).unwrap();
                         px1 -= px2 / 2.0;
                         py1 -= py2 / 2.0;
 

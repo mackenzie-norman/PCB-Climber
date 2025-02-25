@@ -127,7 +127,8 @@ impl Individual {
             backend.draw(&ii);
             for p in &i.pins {
                 let ii = get_pin_rect(p);
-                //backend.draw(&ii);
+                backend.draw(&ii);
+                backend.draw(&label_pin(p));
             }
 
             /*
