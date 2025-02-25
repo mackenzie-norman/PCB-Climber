@@ -1,5 +1,5 @@
 #![allow(dead_code)]
-use num::{integer::gcd, ToPrimitive};
+use num::integer::gcd;
 use plotters::prelude::LogScalable;
 use std::collections::BTreeMap;
 use std::f64::consts::PI;
@@ -89,17 +89,14 @@ impl Bbox {
         let angle_radians = angle_degrees * PI / 180.0;
 
         let rotate_point = |x: f64, y: f64| -> (f64, f64) {
-            let dx = (x - self.centerx) as f64;
-            let dy = (y - self.centery) as f64;
+            let dx = (x - self.centerx);
+            let dy = (y - self.centery);
             let sin = angle_radians.sin();
             let cos = angle_radians.cos();
 
             let new_x = dx * cos - dy * sin;
             let new_y = dx * sin + dy * cos;
-            (
-                self.centerx + new_x.round() as f64,
-                self.centery + new_y.round() as f64,
-            )
+            (self.centerx + new_x.round(), self.centery + new_y.round())
         };
 
         let ll = rotate_point(self.x1, self.y1);
@@ -115,17 +112,14 @@ impl Bbox {
         let angle_radians = angle_degrees * PI / 180.0;
 
         let rotate_point = |x: f64, y: f64| -> (f64, f64) {
-            let dx = (x - centerx) as f64;
-            let dy = (y - centery) as f64;
+            let dx = (x - centerx);
+            let dy = (y - centery);
             let sin = angle_radians.sin();
             let cos = angle_radians.cos();
 
             let new_x = dx * cos - dy * sin;
             let new_y = dx * sin + dy * cos;
-            (
-                centerx + new_x.round() as f64,
-                centery + new_y.round() as f64,
-            )
+            (centerx + new_x.round(), centery + new_y.round())
         };
 
         let ll = rotate_point(self.x1, self.y1);
@@ -342,7 +336,7 @@ pub fn placement_area(comps: &Vec<Component>) -> f64 {
     }
 
     //println!("{:?}", net_bbox);
-    ((max_x - min_x) * (max_y - min_y))
+    (max_x - min_x) * (max_y - min_y)
 }
 pub fn is_valid(comps: &Vec<Component>) -> f64 {
     let mut retur = 1.0;

@@ -1,19 +1,11 @@
 use crate::plcmnt;
 use colored::Colorize;
-use core::net;
-use num::ToPrimitive;
-use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Pin, Placement};
+use plcmnt::{Bbox, Component, Pin, Placement};
 use plotters::prelude::*;
 use rand::prelude::*;
 use std::collections::BTreeMap;
-use std::f32::consts::PI;
-use std::path::Path;
-use std::time::Instant;
-use std::vec;
 
-use std::env;
 use std::fs;
-use std::path;
 
 fn parse_kicad_line_to_floats(passed_str: &str) -> (f64, f64) {
     let x_y_str = passed_str.trim().replace(")", "");
@@ -22,10 +14,10 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> (f64, f64) {
         println!("{:?}", x_y_vec);
     }
 
-    return (
+    (
         x_y_vec[1].parse::<f64>().unwrap(),
         x_y_vec[2].parse::<f64>().unwrap(),
-    );
+    )
 }
 pub fn parse_file() -> Placement {
     // --snip--
@@ -118,11 +110,11 @@ pub fn parse_file() -> Placement {
                 if line.contains(footprint_layer) {
                     //parse and add start and end
                     let (x, y) = parse_kicad_line_to_floats(start);
-                    xs.push((x + x1));
-                    ys.push((y + y1));
+                    xs.push(x + x1);
+                    ys.push(y + y1);
                     let (x, y) = parse_kicad_line_to_floats(end);
-                    xs.push((x + x1));
-                    ys.push((y + y1));
+                    xs.push(x + x1);
+                    ys.push(y + y1);
 
                     //println!("{}, {}",x + x1 ,y+ y1);
                 }
@@ -177,9 +169,9 @@ pub fn parse_file() -> Placement {
                             net = net_v[1].parse::<i32>().unwrap();
                         }
                         let pbbox = Bbox::new(px1, px2, py1, py2);
-                        let mut pin = Pin {
+                        let pin = Pin {
                             refdes: refdes.to_string(),
-                            net: net,
+                            net,
                             bbox: pbbox,
                         };
                         pin_vec.push(pin);
@@ -188,7 +180,7 @@ pub fn parse_file() -> Placement {
 
                 //println!("{}, {}",, ys[ys.len()-1]);
 
-                let mut comp: Component = Component {
+                let comp: Component = Component {
                     refdes: refdes.to_string(),
                     bbox: comp_bbox,
                     rotation: 0,

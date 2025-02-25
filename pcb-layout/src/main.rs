@@ -1,7 +1,4 @@
-use std::time::Instant;
-use std::vec;
 mod plcmnt;
-use num::ToPrimitive;
 use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Pin, Placement};
 mod kicad_parse;
 use colored::Colorize;
@@ -35,17 +32,16 @@ impl Individual {
         let pl_width = scale * (self.pl_area.get_width_fl() + padding * 2.0);
         let pl_height = scale * (self.pl_area.get_height_fl() + padding * 2.0);
         let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
-        let mut backend = BitMapBackend::new(
+        let backend = BitMapBackend::new(
             output_path,
             (pl_width.floor() as u32, pl_height.round() as u32),
         )
         .into_drawing_area();
-        let mut backend =
-            backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
-                0f64..pl_width,
-                0f64..pl_height,
-                (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
-            ));
+        let backend = backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
+            0f64..pl_width,
+            0f64..pl_height,
+            (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
+        ));
         backend.fill(&WHITE);
         let get_rect = |comp: &Component| {
             //let x =
@@ -447,7 +443,7 @@ fn tester(){
     */
 fn main() {
     let pl = parse_file();
-    let mut id = Individual::new(pl);
+    let id = Individual::new(pl);
     //id.mutate();
     id.plot("tester.png");
 }
