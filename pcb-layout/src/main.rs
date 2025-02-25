@@ -7,6 +7,7 @@ mod kicad_parse;
 use kicad_parse::{parse_file};
 use rand::prelude::*;
 use plotters::prelude::*;
+use plotters::coord::types::RangedCoordf64;
 use colored::Colorize;
 fn random_rotation() -> i32 {
     // Get an RNG:
@@ -32,30 +33,65 @@ impl Individual {
         }
     }
     fn plot(&self, output_path: &str){
-        /* 
-        let padding: i32 = 10;
-        let scale: i32 = 12;
-        let pl_width:i32 = scale * (self.pl_area.get_width().to_i32().unwrap() + padding * 2);
-        let pl_height:i32 = scale * (self.pl_area.get_height().to_i32().unwrap() + padding * 2);
+        let padding  = 10.0;
+        let scale = 10.0;
+        
+        let pl_width = scale * (self.pl_area.get_width_fl() + padding * 2.0);
+        let pl_height = scale * (self.pl_area.get_height_fl() + padding * 2.0);
         let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
-        let mut backend: BitMapBackend<'_> = BitMapBackend::new(output_path, (pl_width.try_into().unwrap() , pl_height.try_into().unwrap()));
+        let mut backend  = BitMapBackend::new(output_path, (pl_width.floor() as u32,pl_height.round() as u32)).into_drawing_area();
+        let mut backend = backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
+        0f64..pl_width,
+        0f64..pl_height,
+        (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
+        ));
+        let get_rect = |comp:& Component| {
+            //let x = 
+            let ul: (f64, f64)  =((comp.bbox.x1 + padding)*scale , (comp.bbox.y2 + padding)*scale);
+            let br: (f64, f64) = ((comp.bbox.x2+ padding)*scale, (comp.bbox.y1+ padding)*scale);
+            //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
+            Rectangle::new([ul,br], ShapeStyle::from(&RGBColor(129,133,137)).filled()) 
+            //+ Text::new(format!("({})",comp.refdes),(0.0, 0.0), ("sans-serif", 15.0).into_font())
+
+        };
+        let get_pin_rect = |comp:& Pin| {
+            //let x = 
+            let ul: (f64, f64)  =((comp.bbox.x1 + padding)*scale , (comp.bbox.y2 + padding)*scale);
+            let br: (f64, f64) = ((comp.bbox.x2+ padding)*scale, (comp.bbox.y1+ padding)*scale);
+            //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
+            if comp.net == 11{
+
+                Rectangle::new([ul,br], ShapeStyle::from(&GREEN).filled()) 
+            }else{
+
+                Rectangle::new([ul,br], ShapeStyle::from(&RED).filled()) 
+            }
+            //+ Text::new(format!("({})",comp.refdes),(0.0, 0.0), ("sans-serif", 15.0).into_font())
+
+        };
         //plot pcb
         let ul  =((self.pl_area.x1 + padding)*scale , (self.pl_area.y2 + padding)*scale);
         let br = ((self.pl_area.x2+ padding)*scale, (self.pl_area.y1+ padding)*scale);
         let ur  =((self.pl_area.x2 + padding)*scale , (self.pl_area.y2 + padding)*scale);
         let bl = ((self.pl_area.x1+ padding)*scale, (self.pl_area.y1+ padding)*scale);
-        let _ = backend.draw_rect(ul,br , &RGBAColor(0,255,0, 0.7), false);
-        let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x2,self.pl_area.y2),&style, ur );
-        let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x1, self.pl_area.y1),&style, bl );
+        //let _ = backend.draw_rect(ul,br , &RGBAColor(0,255,0, 0.7), false);
+        //let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x2,self.pl_area.y2),&style, ur );
+        //let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x1, self.pl_area.y1),&style, bl );
 
         for i in &self.comp_list{
-            let ul  =((i.bbox.x1 + padding)*scale , (i.bbox.y2 + padding)*scale);
-            let br = ((i.bbox.x2+ padding)*scale, (i.bbox.y1+ padding)*scale);
+            let ii= get_rect(i);
+            backend.draw(&ii);
+            for p in &i.pins{
+                let ii= get_pin_rect(p);
+                backend.draw(&ii);
+            }
+
+            /*  
             let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
             let text_loc = ((i.bbox.x1 + padding )*scale  , (i.bbox.centery + padding) * scale );
-            let _ = backend.draw_rect(ul,br , &RGBColor(129,133,137), true);
+            //let _ = backend.draw_rect(ul,br , &RGBColor(129,133,137), true);
             let _ = backend.draw_text(&i.refdes,&style, text_loc );
-            for p in &i.pins{
+            
                 
                 let ul  =((p.bbox.x1 + padding)*scale , (p.bbox.y2 + padding)*scale);
                 let br = ((p.bbox.x2+ padding)*scale, (p.bbox.y1+ padding)*scale);
@@ -63,16 +99,19 @@ impl Individual {
                 let text_loc = ((p.bbox.x1 + padding )*scale  , (p.bbox.centery + padding) * scale );
                 if p.net != 0{
 
-                    let _ = backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
+                    //let _ = backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
                 }
                 else{
-                    let _ = backend.draw_rect(ul,br , &RGBColor(255,1,1), true);
+                    //let _ = backend.draw_rect(ul,br , &RGBColor(255,1,1), true);
 
                 }
-                let _ = backend.draw_text(&format!("{}.{}", &p.refdes,&p.net) ,&style, text_loc );
-            }
+               let _ = backend.draw_text(&format!("{}.{}", &p.refdes,&p.net) ,&style, text_loc );
+               
+
+            }*/
         } 
         let _ = backend.present();
+        /* 
         */
     }
     

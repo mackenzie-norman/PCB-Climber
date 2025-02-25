@@ -29,13 +29,13 @@ impl Bbox {
             x2,
             y1,
             y2,
-            centerx: x1 + ((x1 - x2).abs() / 2),
-            centery: y1 + ((y1 - y2).abs() / 2),
+            centerx: x1 + ((x1 - x2).abs() / 2.0),
+            centery: y1 + ((y1 - y2).abs() / 2.0),
         }
     }
     pub fn recenter(&mut self) {
-        self.centerx = self.x1 + ((self.x1 - self.x2).abs() / 2);
-        self.centery = self.y1 + ((self.y1 - self.y2).abs() / 2);
+        self.centerx = self.x1 + ((self.x1 - self.x2).abs() / 2.0);
+        self.centery = self.y1 + ((self.y1 - self.y2).abs() / 2.0);
     }
     
     pub fn get_width_fl(&self) -> f64 {
@@ -220,11 +220,11 @@ impl Component {
         }
         self.bbox.recenter();
     }
-    pub fn get_width(&self) -> usize {
-        self.bbox.get_width()
+    pub fn get_width(&self) -> f64 {
+        self.bbox.get_width_fl()
     }
-    pub fn get_height(&self) -> usize {
-        self.bbox.get_height()
+    pub fn get_height(&self) -> f64 {
+        self.bbox.get_height_fl()
     }
     pub fn move_to(&mut self, x: f64, y: f64) {
         self.bbox.recenter();
