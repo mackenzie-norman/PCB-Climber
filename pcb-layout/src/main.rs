@@ -1,14 +1,14 @@
-use std::vec;
 use std::time::Instant;
+use std::vec;
 mod plcmnt;
 use num::ToPrimitive;
-use plcmnt::{hpwl, is_valid, Bbox, Component, Placement, Pin, placement_area};
+use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Pin, Placement};
 mod kicad_parse;
-use kicad_parse::{parse_file};
-use rand::prelude::*;
-use plotters::prelude::*;
-use plotters::coord::types::RangedCoordf64;
 use colored::Colorize;
+use kicad_parse::parse_file;
+use plotters::coord::types::RangedCoordf64;
+use plotters::prelude::*;
+use rand::prelude::*;
 fn random_rotation() -> i32 {
     // Get an RNG:
     let mut rng = rand::rng();
@@ -17,88 +17,130 @@ fn random_rotation() -> i32 {
     *choice
 }
 struct Individual {
-    
     comp_list: Vec<Component>,
-    pl_area: Bbox
+    pl_area: Bbox,
 }
 
 impl Individual {
     fn new(pl: Placement) -> Self {
-        
-        
         Individual {
-            
             comp_list: pl.components,
-            pl_area : pl.placement_area
+            pl_area: pl.placement_area,
         }
     }
-    fn plot(&self, output_path: &str){
-        let padding  = 10.0;
+    fn plot(&self, output_path: &str) {
+        let padding = 10.0;
         let scale = 10.0;
-        
+
         let pl_width = scale * (self.pl_area.get_width_fl() + padding * 2.0);
         let pl_height = scale * (self.pl_area.get_height_fl() + padding * 2.0);
         let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
-        let mut backend  = BitMapBackend::new(output_path, (pl_width.floor() as u32,pl_height.round() as u32)).into_drawing_area();
-        let mut backend = backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
-        0f64..pl_width,
-        0f64..pl_height,
-        (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
-        ));
+        let mut backend = BitMapBackend::new(
+            output_path,
+            (pl_width.floor() as u32, pl_height.round() as u32),
+        )
+        .into_drawing_area();
+        let mut backend =
+            backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
+                0f64..pl_width,
+                0f64..pl_height,
+                (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
+            ));
         backend.fill(&WHITE);
-        let get_rect = |comp:& Component| {
-            //let x = 
-            let ul: (f64, f64)  =((comp.bbox.x1 + padding)*scale , (comp.bbox.y2 + padding)*scale);
-            let br: (f64, f64) = ((comp.bbox.x2+ padding)*scale, (comp.bbox.y1+ padding)*scale);
+        let get_rect = |comp: &Component| {
+            //let x =
+            let ul: (f64, f64) = (
+                (comp.bbox.x1 + padding) * scale,
+                (comp.bbox.y2 + padding) * scale,
+            );
+            let br: (f64, f64) = (
+                (comp.bbox.x2 + padding) * scale,
+                (comp.bbox.y1 + padding) * scale,
+            );
             //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
-            Rectangle::new([ul,br], ShapeStyle::from(&RGBColor(129,133,137)).filled()) 
+            Rectangle::new(
+                [ul, br],
+                ShapeStyle::from(&RGBColor(129, 133, 137)).filled(),
+            )
             //+ Text::new(format!("({})",comp.refdes),(0.0, 0.0), ("sans-serif", 15.0).into_font())
-
         };
-        let get_pin_rect = |comp:& Pin| {
-            //let x = 
-            let ul: (f64, f64)  =((comp.bbox.x1 + padding)*scale , (comp.bbox.y2 + padding)*scale);
-            let br: (f64, f64) = ((comp.bbox.x2+ padding)*scale, (comp.bbox.y1+ padding)*scale);
+        let get_pin_rect = |comp: &Pin| {
+            //let x =
+            let ul: (f64, f64) = (
+                (comp.bbox.x1 + padding) * scale,
+                (comp.bbox.y2 + padding) * scale,
+            );
+            let br: (f64, f64) = (
+                (comp.bbox.x2 + padding) * scale,
+                (comp.bbox.y1 + padding) * scale,
+            );
             //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
-            if comp.net == 11{
-
-                Rectangle::new([ul,br], ShapeStyle::from(&GREEN).filled()) 
-            }else{
-
-                Rectangle::new([ul,br], ShapeStyle::from(&RED).filled()) 
+            if comp.net == 11 {
+                Rectangle::new([ul, br], ShapeStyle::from(&GREEN).filled())
+            } else {
+                Rectangle::new([ul, br], ShapeStyle::from(&RED).filled())
             }
             //+ Text::new(format!("({})",comp.refdes),(0.0, 0.0), ("sans-serif", 15.0).into_font())
-
         };
-        let label_pin = |comp:& Pin| {
-            let ul: (f64, f64)  =((comp.bbox.x1 + padding)*scale , (comp.bbox.y2 + padding)*scale);
-            Text::new(format!("({})",comp.refdes),ul, ("sans-serif", 15.0).into_font())
+        let label_pin = |comp: &Pin| {
+            let ul: (f64, f64) = (
+                (comp.bbox.x1 + padding) * scale,
+                (comp.bbox.y2 + padding) * scale,
+            );
+            Text::new(
+                format!("({})", comp.refdes),
+                ul,
+                ("sans-serif", 15.0).into_font(),
+            )
+        };
+        let label_comp = |comp: &Component| {
+            let ul: (f64, f64) = (
+                (comp.bbox.x1 + padding) * scale,
+                (comp.bbox.y2 + padding) * scale,
+            );
+            Text::new(
+                format!("({})", comp.refdes),
+                ul,
+                ("sans-serif", 15.0).into_font(),
+            )
         };
         //plot pcb
-        let ul  =((self.pl_area.x1 + padding)*scale , (self.pl_area.y2 + padding)*scale);
-        let br = ((self.pl_area.x2+ padding)*scale, (self.pl_area.y1+ padding)*scale);
-        let ur  =((self.pl_area.x2 + padding)*scale , (self.pl_area.y2 + padding)*scale);
-        let bl = ((self.pl_area.x1+ padding)*scale, (self.pl_area.y1+ padding)*scale);
+        let ul = (
+            (self.pl_area.x1 + padding) * scale,
+            (self.pl_area.y2 + padding) * scale,
+        );
+        let br = (
+            (self.pl_area.x2 + padding) * scale,
+            (self.pl_area.y1 + padding) * scale,
+        );
+        let ur = (
+            (self.pl_area.x2 + padding) * scale,
+            (self.pl_area.y2 + padding) * scale,
+        );
+        let bl = (
+            (self.pl_area.x1 + padding) * scale,
+            (self.pl_area.y1 + padding) * scale,
+        );
         //let _ = backend.draw_rect(ul,br , &RGBAColor(0,255,0, 0.7), false);
         //let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x2,self.pl_area.y2),&style, ur );
         //let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x1, self.pl_area.y1),&style, bl );
 
-        for i in &self.comp_list{
-            let ii= get_rect(i);
+        for i in &self.comp_list {
+            let ii = get_rect(i);
+            backend.draw(&label_comp(i));
             backend.draw(&ii);
-            for p in &i.pins{
-                let ii= get_pin_rect(p);
-                backend.draw(&ii);
-                backend.draw(&label_pin(p));
+            for p in &i.pins {
+                let ii = get_pin_rect(p);
+                //backend.draw(&ii);
             }
 
-            /*  
+            /*
             let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
             let text_loc = ((i.bbox.x1 + padding )*scale  , (i.bbox.centery + padding) * scale );
             //let _ = backend.draw_rect(ul,br , &RGBColor(129,133,137), true);
             let _ = backend.draw_text(&i.refdes,&style, text_loc );
-            
-                
+
+
                 let ul  =((p.bbox.x1 + padding)*scale , (p.bbox.y2 + padding)*scale);
                 let br = ((p.bbox.x2+ padding)*scale, (p.bbox.y1+ padding)*scale);
                 let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
@@ -112,37 +154,37 @@ impl Individual {
 
                 }
                let _ = backend.draw_text(&format!("{}.{}", &p.refdes,&p.net) ,&style, text_loc );
-               
+
 
             }*/
-        } 
+        }
         let _ = backend.present();
-        /* 
-        */
+        /*
+         */
     }
-    
-    fn move_comp(&mut self, a: usize,x:f64, y:f64) -> bool{
+
+    fn move_comp(&mut self, a: usize, x: f64, y: f64) -> bool {
         let a_comp = &mut (self.comp_list[a - 1]);
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
         a_comp.move_to(x, y);
-        let a_comp = & (self.comp_list[a - 1]);
+        let a_comp = &(self.comp_list[a - 1]);
         let mut okay = a_comp.bbox.is_out_of_bounds(&self.pl_area);
-        
-        if okay{
+
+        if okay {
             let mut count = 1;
-            for i in &self.comp_list{
-                
-                if count != a && a_comp.bbox.does_overlap(&i.bbox){okay = false};
+            for i in &self.comp_list {
+                if count != a && a_comp.bbox.does_overlap(&i.bbox) {
+                    okay = false
+                };
                 count += 1;
             }
-        } 
+        }
         if !okay {
             //println!("{}", "BAD".red());
             let a_comp = &mut (self.comp_list[a - 1]);
             a_comp.move_to(old_pos.0, old_pos.1);
             false
-
-        }else{
+        } else {
             true
             //println!("{}", "GOOD".green());
         }
@@ -159,18 +201,14 @@ impl Individual {
         //drop(a_comp);
 
         if self.move_comp(b, old_a_loc.0, old_a_loc.1) {
-
             if self.move_comp(a, old_b_loc.0, old_b_loc.1) {
                 return true;
-            }else{
+            } else {
                 let a_comp = &mut (self.comp_list[a - 1]);
                 a_comp.move_to(old_a_loc.0, old_a_loc.1);
                 //drop(a_comp);
-                
             }
-
-        }else{
-            
+        } else {
             self.move_comp(b, old_b_loc.0, old_b_loc.1);
         }
         true
@@ -178,115 +216,114 @@ impl Individual {
     fn move_to_new(&mut self, a: usize) {
         let mut rng = rand::rng();
         let qk_comp = self.comp_list[a - 1].bbox;
-        let x = rng.random_range( qk_comp.get_width_fl() .. self.pl_area.x2);
-        let y = rng.random_range(qk_comp.get_height_fl() ..self.pl_area.y2);
+        let x = rng.random_range(qk_comp.get_width_fl()..self.pl_area.x2);
+        let y = rng.random_range(qk_comp.get_height_fl()..self.pl_area.y2);
         //We need to zero, so lets grab the coords and also hold on to them
         //let a: usize = 2;
         self.move_comp(a, x, y);
-        
     }
 
-    fn score(& self) -> f64 {
-        is_valid(& self.comp_list ) * placement_area(& self.comp_list) * hpwl(& self.comp_list)
+    fn score(&self) -> f64 {
+        is_valid(&self.comp_list) * placement_area(&self.comp_list) * hpwl(&self.comp_list)
     }
 
     fn rotate(&mut self, a: usize, rotation: i32) -> bool {
         let a_comp = &mut (self.comp_list[a - 1]);
-      
+
         a_comp.rotate_comp(rotation);
-        let a_comp = & (self.comp_list[a - 1]);
+        let a_comp = &(self.comp_list[a - 1]);
         let mut okay = a_comp.bbox.is_out_of_bounds(&self.pl_area);
-        
-        if okay{
+
+        if okay {
             let mut count = 1;
-            for i in &self.comp_list{
-                
-                if count != a && a_comp.bbox.does_overlap(&i.bbox){okay = false};
+            for i in &self.comp_list {
+                if count != a && a_comp.bbox.does_overlap(&i.bbox) {
+                    okay = false
+                };
                 count += 1;
             }
-            
-        } 
+        }
         if !okay {
             let a_comp = &mut (self.comp_list[a - 1]);
-            a_comp.rotate_comp( -rotation);
+            a_comp.rotate_comp(-rotation);
             false
             //a_comp.move_to(old_pos.0, old_pos.1);
-
-        }else{
+        } else {
             true
             //println!("{}", "GOOD".green());
         }
-
-       
     }
-    fn refdes_to_indx(&self, rfdes:String) -> usize{
+    fn refdes_to_indx(&self, rfdes: String) -> usize {
         let mut i: usize = 1;
-        for comp in &self.comp_list{
-            if comp.refdes == rfdes{ return  i};
-            i +=1;
-
+        for comp in &self.comp_list {
+            if comp.refdes == rfdes {
+                return i;
+            };
+            i += 1;
         }
         0
-        
     }
-    fn crossover(&self, other : & Individual) -> Individual{
+    fn crossover(&self, other: &Individual) -> Individual {
         //assert!() // add assertion to ensure they are same size
         let mut rng = rand::rng();
         let x1 = rng.random_range(0.0..self.pl_area.x2);
         let y1 = rng.random_range(0.0..self.pl_area.y2);
-        let select_box: Bbox = Bbox::new( x1,  rng.random_range(x1..self.pl_area.x2), y1,  rng.random_range(y1..self.pl_area.y2));
-        let mut non_selected_comps: Vec<& Component> = Vec::new();
+        let select_box: Bbox = Bbox::new(
+            x1,
+            rng.random_range(x1..self.pl_area.x2),
+            y1,
+            rng.random_range(y1..self.pl_area.y2),
+        );
+        let mut non_selected_comps: Vec<&Component> = Vec::new();
         //let mut tmp_rf: Vec<&str> = Vec::new();
-        for comp in &self.comp_list{
-            if !comp.bbox.does_overlap(&select_box){
+        for comp in &self.comp_list {
+            if !comp.bbox.does_overlap(&select_box) {
                 //tmp_rf.push(comp.refdes);
-                for oth_comp in &self.comp_list{
-                    if comp.refdes == oth_comp.refdes{
-
+                for oth_comp in &self.comp_list {
+                    if comp.refdes == oth_comp.refdes {
                         non_selected_comps.push(oth_comp);
                     }
                 }
             }
         }
         //println!("{:?}", non_selected_comps );
-        let mut child: Individual =  Individual{
+        let mut child: Individual = Individual {
             comp_list: other.comp_list.clone(),
-            pl_area: self.pl_area
+            pl_area: self.pl_area,
         };
-        for comp in non_selected_comps{
+        for comp in non_selected_comps {
             let comp_idx = child.refdes_to_indx(comp.refdes.clone());
             let could_move = child.move_comp(comp_idx, comp.bbox.x1, comp.bbox.y1);
-            if ! could_move{
+            if !could_move {
                 child.move_to_new(comp_idx);
             }
         }
         child
-
     }
 
     fn mutate(&mut self) {
         let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
         let c = rng.random_range(1..4);
-        
+
         match c {
-            1   => {
+            1 => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);
                 self.swap(a, b);
-            },
-            2 =>{
+            }
+            2 => {
                 self.move_to_new(a);
             }
             3 => {
                 self.rotate(a, random_rotation());
-            },
-            _ =>{}
+            }
+            _ => {}
         }
     }
 }
-/* 
+/*
 fn tester(){
-    
+
     let placement_area = Bbox::new(0, 36, 0, 36);
     let pin_boxx = Bbox::new(0, 2, 0,1);
     let base_pin = Pin{refdes :"C1".to_string(), net: 0, bbox:pin_boxx };
@@ -340,7 +377,7 @@ fn tester(){
     c3.rotate_comp(180);
     //c3.rotate_comp(90);
     let comps: Vec<Component> = vec![c1, c2,c3,c4, c5];
-    
+
     let pl = Placement {
         components: comps,
         placement_area,
@@ -361,8 +398,8 @@ fn tester(){
 
         }
 
-    
-    
+
+
         // And if we want SVG backend
         // let backend = SVGBackend::new("output.svg", (800, 600));
         //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
@@ -385,7 +422,7 @@ fn tester(){
                 population.push(child_a);
                 population.push(child_b);
             }
-            population.sort_by(|a: &Individual, b: &Individual| { 
+            population.sort_by(|a: &Individual, b: &Individual| {
                 let a_s = a.score();
                 let b_s = b.score();
                 a_s.cmp(&b_s)}
@@ -396,7 +433,7 @@ fn tester(){
         */
         let id = &mut population[0];
         println!("New Score: {}", id.score());
-    
+
         id.plot(&format!("test-{}x{}.png", pop_size, i.1));
         let elapsed_time = now.elapsed();
         println!("Test took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
@@ -404,8 +441,8 @@ fn tester(){
         println!("{}", "+++++++Test Over+++++++".to_string().green());
         println!();
     }
-    
-    
+
+
 }
     */
 fn main() {
