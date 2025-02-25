@@ -159,7 +159,7 @@ pub fn parse_file() -> Placement {
                     net:net, 
                     bbox:pbbox
                 };
-                pin_vec.push(pin.clone());
+                pin_vec.push(pin);
 
             }
             

@@ -45,6 +45,7 @@ impl Individual {
         0f64..pl_height,
         (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
         ));
+        backend.fill(&WHITE);
         let get_rect = |comp:& Component| {
             //let x = 
             let ul: (f64, f64)  =((comp.bbox.x1 + padding)*scale , (comp.bbox.y2 + padding)*scale);
@@ -69,6 +70,10 @@ impl Individual {
             //+ Text::new(format!("({})",comp.refdes),(0.0, 0.0), ("sans-serif", 15.0).into_font())
 
         };
+        let label_pin = |comp:& Pin| {
+            let ul: (f64, f64)  =((comp.bbox.x1 + padding)*scale , (comp.bbox.y2 + padding)*scale);
+            Text::new(format!("({})",comp.refdes),ul, ("sans-serif", 15.0).into_font())
+        };
         //plot pcb
         let ul  =((self.pl_area.x1 + padding)*scale , (self.pl_area.y2 + padding)*scale);
         let br = ((self.pl_area.x2+ padding)*scale, (self.pl_area.y1+ padding)*scale);
@@ -84,6 +89,7 @@ impl Individual {
             for p in &i.pins{
                 let ii= get_pin_rect(p);
                 backend.draw(&ii);
+                backend.draw(&label_pin(p));
             }
 
             /*  
