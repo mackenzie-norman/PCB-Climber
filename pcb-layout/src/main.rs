@@ -43,7 +43,7 @@ impl Individual {
             0f64..pl_height,
             (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
         ));
-        backend.fill(&WHITE);
+        let _ = backend.fill(&WHITE);
         let get_rect = |comp: &Component| {
             //let x =
             let ul: (f64, f64) = (
@@ -54,12 +54,12 @@ impl Individual {
                 (comp.bbox.x2 + padding) * scale,
                 (comp.bbox.y1 + padding) * scale,
             );
-            //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
+            
             Rectangle::new(
                 [ul, br],
                 ShapeStyle::from(&RGBColor(129, 133, 137)).filled(),
             )
-            //+ Text::new(format!("({})",comp.refdes),(0.0, 0.0), ("sans-serif", 15.0).into_font())
+            
         };
         let get_pin_rect = |comp: &Pin| {
             //let x =
@@ -71,13 +71,13 @@ impl Individual {
                 (comp.bbox.x2 + padding) * scale,
                 (comp.bbox.y1 + padding) * scale,
             );
-            //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
+            
             if comp.net == 11 {
                 Rectangle::new([ul, br], ShapeStyle::from(&GREEN).filled())
             } else {
                 Rectangle::new([ul, br], ShapeStyle::from(&RED).filled())
             }
-            //+ Text::new(format!("({})",comp.refdes),(0.0, 0.0), ("sans-serif", 15.0).into_font())
+            
         };
         let label_pin = |comp: &Pin| {
             let ul: (f64, f64) = (
@@ -115,60 +115,15 @@ impl Individual {
 
         };
         //plot pcb
-        backend.draw(&plot_pcb(&self.pl_area));
-        let ul = (
-            (self.pl_area.x1 + padding) * scale,
-            (self.pl_area.y2 + padding) * scale,
-        );
-        let br = (
-            (self.pl_area.x2 + padding) * scale,
-            (self.pl_area.y1 + padding) * scale,
-        );
-        let ur = (
-            (self.pl_area.x2 + padding) * scale,
-            (self.pl_area.y2 + padding) * scale,
-        );
-        let bl = (
-            (self.pl_area.x1 + padding) * scale,
-            (self.pl_area.y1 + padding) * scale,
-        );
-        //let _ = backend.draw_rect(ul,br , &RGBAColor(0,255,0, 0.7), false);
-        //let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x2,self.pl_area.y2),&style, ur );
-        //let _ = backend.draw_text(&format!("{}, {}", self.pl_area.x1, self.pl_area.y1),&style, bl );
-
+        let _ = backend.draw(&plot_pcb(&self.pl_area));
+        
         for i in &self.comp_list {
-            let ii = get_rect(i);
-            backend.draw(&label_comp(i));
-            backend.draw(&ii);
+            let _ =  backend.draw(&label_comp(i));
+            let _ = backend.draw(&get_rect(i));
             for p in &i.pins {
-                let ii = get_pin_rect(p);
-                backend.draw(&ii);
+                let _ = backend.draw(&get_pin_rect(p));
                 //backend.draw(&label_pin(p));
             }
-
-            /*
-            let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
-            let text_loc = ((i.bbox.x1 + padding )*scale  , (i.bbox.centery + padding) * scale );
-            //let _ = backend.draw_rect(ul,br , &RGBColor(129,133,137), true);
-            let _ = backend.draw_text(&i.refdes,&style, text_loc );
-
-
-                let ul  =((p.bbox.x1 + padding)*scale , (p.bbox.y2 + padding)*scale);
-                let br = ((p.bbox.x2+ padding)*scale, (p.bbox.y1+ padding)*scale);
-                let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
-                let text_loc = ((p.bbox.x1 + padding )*scale  , (p.bbox.centery + padding) * scale );
-                if p.net != 0{
-
-                    //let _ = backend.draw_rect(ul,br , &RGBColor(0,255,1), true);
-                }
-                else{
-                    //let _ = backend.draw_rect(ul,br , &RGBColor(255,1,1), true);
-
-                }
-               let _ = backend.draw_text(&format!("{}.{}", &p.refdes,&p.net) ,&style, text_loc );
-
-
-            }*/
         }
         let _ = backend.present();
         /*

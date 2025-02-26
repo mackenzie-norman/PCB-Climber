@@ -2,6 +2,7 @@
 use num::integer::gcd;
 use plotters::prelude::LogScalable;
 use std::collections::BTreeMap;
+use plotters::prelude::*;
 use std::f64::consts::PI;
 pub fn gcd_of_vector(nums: &[usize]) -> usize {
     let mut result = nums[0]; // Initialize with the first element
@@ -43,33 +44,10 @@ impl Bbox {
     }
     pub fn get_height_fl(&self) -> f64 {
         (self.y1 - self.y2).abs()
-    } /*
-      pub fn get_width(&self) -> usize {
-          (self.x1 - self.x2).unsigned_abs().try_into().unwrap()
-      }
-      pub fn get_height(&self) -> usize {
-          (self.y1 - self.y2).unsigned_abs().try_into().unwrap()
-      }
-      pub fn as_btree(&self, disc: i32, value: usize) -> BTreeMap<(usize, usize), usize> {
-          let mut ret_btree: BTreeMap<(usize, usize), usize> = BTreeMap::new();
-          let start_x = self.x1 / disc;
-          let start_y = self.y1 / disc;
-          let end_x = self.x2 / disc;
-          let end_y = self.y2 / disc;
-          let mut cur_x = start_x;
-          let mut cur_y = start_y;
-          while cur_x < end_x {
-              while cur_y < end_y {
-                  let tmp_dict = (cur_x.try_into().unwrap(), cur_y.try_into().unwrap());
-                  ret_btree.insert(tmp_dict, value);
-                  cur_y += 1;
-              }
-              cur_x += 1;
-              cur_y = start_y;
-          }
-          ret_btree
-      }
-      */
+    } 
+    pub fn plot(&self, color:&RGBColor){
+
+    }
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
     }
