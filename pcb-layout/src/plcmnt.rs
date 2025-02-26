@@ -45,8 +45,18 @@ impl Bbox {
     pub fn get_height_fl(&self) -> f64 {
         (self.y1 - self.y2).abs()
     } 
-    pub fn plot(&self, color:&RGBColor){
-
+    pub fn plot(&self, color:&RGBColor) -> Rectangle<(f64, f64)> {
+        let ul: (f64, f64) = ( self.x1,self.y2 );
+        let br: (f64, f64) = (self.x2 ,self.y1 );
+        Rectangle::new([ul, br], ShapeStyle::from(color.filled()))
+    }
+    pub fn label_bbox(&self, label:String) -> Text<'_, (f64, f64), String>{
+        let ul: (f64, f64) = ( self.x1,self.y2 );
+        Text::new(
+            format!("({})", label ),
+            ul,
+            ("sans-serif", 15.0).into_font(),
+        )
     }
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
@@ -151,6 +161,7 @@ impl Bbox {
 pub struct Placement {
     pub components: Vec<Component>,
     pub placement_area: Bbox,
+    pub net_map:  BTreeMap<i32, String>
 }
 #[derive(Debug, Clone)]
 pub struct Pin {

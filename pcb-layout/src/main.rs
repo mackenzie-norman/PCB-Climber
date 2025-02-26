@@ -1,5 +1,5 @@
 mod plcmnt;
-use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Pin, Placement};
+use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Placement};
 mod kicad_parse;
 use colored::Colorize;
 use kicad_parse::parse_file;
@@ -7,6 +7,8 @@ use plotters::coord::types::RangedCoordf64;
 use plotters::prelude::*;
 use rand::prelude::*;
 use std::time::Instant;
+use std::collections::BTreeMap;
+
 fn random_rotation() -> i32 {
     // Get an RNG:
     let mut rng = rand::rng();
@@ -16,7 +18,7 @@ fn random_rotation() -> i32 {
 }
 struct Individual {
     comp_list: Vec<Component>,
-    pl_area: Bbox,
+    pl_area: Bbox,  
 }
 
 impl Individual {
@@ -26,7 +28,7 @@ impl Individual {
             pl_area: pl.placement_area,
         }
     }
-    fn plot(&self, output_path: &str) {
+    fn plot(&self, output_path: &str, net_map: &BTreeMap<i32, String> ) {
         let padding = 10.0;
         let scale = 10.0;
 
@@ -39,89 +41,26 @@ impl Individual {
         )
         .into_drawing_area();
         let backend = backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
-            0f64..pl_width,
-            0f64..pl_height,
+            0f64..self.pl_area.get_width_fl(),
+            0f64..self.pl_area.get_height_fl(),
             (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
         ));
         let _ = backend.fill(&WHITE);
-        let get_rect = |comp: &Component| {
-            //let x =
-            let ul: (f64, f64) = (
-                (comp.bbox.x1 + padding) * scale,
-                (comp.bbox.y2 + padding) * scale,
-            );
-            let br: (f64, f64) = (
-                (comp.bbox.x2 + padding) * scale,
-                (comp.bbox.y1 + padding) * scale,
-            );
-            
-            Rectangle::new(
-                [ul, br],
-                ShapeStyle::from(&RGBColor(129, 133, 137)).filled(),
-            )
-            
-        };
-        let get_pin_rect = |comp: &Pin| {
-            //let x =
-            let ul: (f64, f64) = (
-                (comp.bbox.x1 + padding) * scale,
-                (comp.bbox.y2 + padding) * scale,
-            );
-            let br: (f64, f64) = (
-                (comp.bbox.x2 + padding) * scale,
-                (comp.bbox.y1 + padding) * scale,
-            );
-            
-            if comp.net == 11 {
-                Rectangle::new([ul, br], ShapeStyle::from(&GREEN).filled())
-            } else {
-                Rectangle::new([ul, br], ShapeStyle::from(&RED).filled())
-            }
-            
-        };
-        let label_pin = |comp: &Pin| {
-            let ul: (f64, f64) = (
-                (comp.bbox.x1 + padding) * scale,
-                (comp.bbox.y2 + padding) * scale,
-            );
-            Text::new(
-                format!("({})", comp.refdes),
-                ul,
-                ("sans-serif", 15.0).into_font(),
-            )
-        };
-        let label_comp = |comp: &Component| {
-            let ul: (f64, f64) = (
-                (comp.bbox.x1 + padding) * scale,
-                (comp.bbox.y2 + padding) * scale,
-            );
-            Text::new(
-                format!("({})", comp.refdes),
-                ul,
-                ("sans-serif", 15.0).into_font(),
-            )
-        };
-        let plot_pcb = |area: &Bbox| {
-            let ul: (f64, f64) = (
-                (area.x1 + padding) * scale,
-                (area.y2 + padding) * scale,
-            );
-            let br: (f64, f64) = (
-                (area.x2 + padding) * scale,
-                (area.y1 + padding) * scale,
-            );
-            //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
-    Rectangle::new([ul, br], ShapeStyle::from(&RGBColor(22, 77, 2)).filled())
-
-        };
+        
         //plot pcb
-        let _ = backend.draw(&plot_pcb(&self.pl_area));
+        let _ = backend.draw(&self.pl_area.plot(&RGBColor(22, 77, 2)));
         
         for i in &self.comp_list {
-            let _ =  backend.draw(&label_comp(i));
-            let _ = backend.draw(&get_rect(i));
+            //let _ =  backend.draw(&label_comp(i));
+            let _ = backend.draw(&i.bbox.plot(&RGBColor(129, 133, 137)));
             for p in &i.pins {
-                let _ = backend.draw(&get_pin_rect(p));
+                let net_name = net_map.get(&p.net).unwrap();
+                if net_name.to_lowercase() =="gnd"{
+                    let _ = backend.draw(&p.bbox.plot(&GREEN));
+                }else{
+                    let _ = backend.draw(&p.bbox.plot(&RED));
+                    
+                }
                 //backend.draw(&label_pin(p));
             }
         }
@@ -356,7 +295,7 @@ fn tester(pl:Placement){
     
     let pl_2 = pl.clone();
     let  id2 = Individual::new(pl_2);
-    id2.plot("0.png");
+    id2.plot("0.png", &pl.net_map);
     let gen_mult = 1;
     let test_cases: Vec<(usize, i32)> = vec![(10, 10000 * gen_mult ), (20, 5000 * gen_mult), (50,2000 * gen_mult), (100,1000 * gen_mult), (200, 500 * gen_mult), (500,200 * gen_mult)];
     for i in test_cases{
@@ -376,7 +315,7 @@ fn tester(pl:Placement){
         // let backend = SVGBackend::new("output.svg", (800, 600));
         //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
         let id = &mut population[0];
-        id.plot("0.png");
+        id.plot("0.png", &pl.net_map);
         println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, i.1).green());
         println!("Original Score: {}", id.score());
         let now = Instant::now();
@@ -407,7 +346,7 @@ fn tester(pl:Placement){
         let id = &mut population[0];
         println!("New Score: {}", id.score());
 
-        id.plot(&format!("test-{}x{}.png", pop_size, i.1));
+        id.plot(&format!("test-{}x{}.png", pop_size, i.1), &pl.net_map);
         let elapsed_time = now.elapsed();
         println!("Test took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
         println!("![{}]({})",&format!("test-{}x{}.png", pop_size, i.1),&format!("test-{}x{}.png", pop_size, i.1) );
@@ -422,11 +361,17 @@ fn main() {
     pl.components.truncate(5);
     let mut pl2 = Placement{
         placement_area: pl.placement_area.clone(),
-        components: pl.components.clone()
+        components: pl.components.clone(),
+        net_map:pl.net_map.clone()
     };
     pl2.shift_placement(0.0, 0.0);
     //println!("{:?}", pl2);
-    tester(pl2);
-    //id.mutate();
-    //id.plot("tester.png");
+    let test = true;
+    if test{
+        tester(pl2);
+    }else{
+        let mut id = Individual::new(pl2);
+        id.mutate();
+        id.plot("tester.png", &pl.net_map);
+    }
 }

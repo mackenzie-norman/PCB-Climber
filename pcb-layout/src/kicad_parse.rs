@@ -1,8 +1,5 @@
 use crate::plcmnt;
-use colored::Colorize;
 use plcmnt::{Bbox, Component, Pin, Placement};
-use plotters::prelude::*;
-use rand::prelude::*;
 use std::collections::BTreeMap;
 
 use std::fs;
@@ -22,9 +19,9 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
 }
 pub fn parse_file() -> Placement {
     // --snip--
-    let file_path = "..\\demo\\demo.kicad_pcb";
-    let file_path = "..\\demo\\layout1.kicad_pcb";
-    let file_path = "..\\BeagleBone_Black.unrouted.kicad_pcb";
+    //let file_path = "..\\demo\\demo.kicad_pcb";
+    //let file_path = "..\\demo\\layout1.kicad_pcb";
+    //let file_path = "..\\BeagleBone_Black.unrouted.kicad_pcb";
     let file_path = "..\\arduino_kicad\\Arduino UNO.kicad_pcb";
     println!("In file {file_path}");
 
@@ -69,8 +66,8 @@ pub fn parse_file() -> Placement {
             net_map.insert(net_idx, net_name);
         }
         if line.starts_with("\t(footprint ") {
-            line = content_iter.next().unwrap();
-            line = content_iter.next().unwrap();
+            let _ = content_iter.next().unwrap();
+            let _ = content_iter.next().unwrap();
             let x_y_str = content_iter.next().unwrap().trim_end().replace(")", "");
             let x_y_vec: Vec<&str> = x_y_str.split(" ").collect();
             //println!("{:?}", x_y_vec);
@@ -151,7 +148,7 @@ pub fn parse_file() -> Placement {
             if !xs.is_empty() {
                 xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
                 ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
-                let mut comp_bbox = Bbox::new(xs[0], xs[xs.len() - 1], ys[0], ys[ys.len() - 1]);
+                let  comp_bbox = Bbox::new(xs[0], xs[xs.len() - 1], ys[0], ys[ys.len() - 1]);
                 let mut pin_vec: Vec<Pin> = Vec::new();
                 
                 //outer pin loop
@@ -270,7 +267,8 @@ pub fn parse_file() -> Placement {
 
     Placement {
         components: comp_vec,
-        placement_area: pl_area
+        placement_area: pl_area,
+        net_map:net_map
     }
     //println!("{:?}", net_map);
 }
