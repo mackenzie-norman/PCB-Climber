@@ -6,6 +6,7 @@ use kicad_parse::parse_file;
 use plotters::coord::types::RangedCoordf64;
 use plotters::prelude::*;
 use rand::prelude::*;
+use std::time::Instant;
 fn random_rotation() -> i32 {
     // Get an RNG:
     let mut rng = rand::rng();
@@ -31,7 +32,7 @@ impl Individual {
 
         let pl_width = scale * (self.pl_area.get_width_fl() + padding * 2.0);
         let pl_height = scale * (self.pl_area.get_height_fl() + padding * 2.0);
-        let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
+        //let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
         let backend = BitMapBackend::new(
             output_path,
             (pl_width.floor() as u32, pl_height.round() as u32),
@@ -100,7 +101,21 @@ impl Individual {
                 ("sans-serif", 15.0).into_font(),
             )
         };
+        let plot_pcb = |area: &Bbox| {
+            let ul: (f64, f64) = (
+                (area.x1 + padding) * scale,
+                (area.y2 + padding) * scale,
+            );
+            let br: (f64, f64) = (
+                (area.x2 + padding) * scale,
+                (area.y1 + padding) * scale,
+            );
+            //let ee: EmptyElement<(f64, f64), _> = EmptyElement::at(ul) ;
+    Rectangle::new([ul, br], ShapeStyle::from(&RGBColor(22, 77, 2)).filled())
+
+        };
         //plot pcb
+        backend.draw(&plot_pcb(&self.pl_area));
         let ul = (
             (self.pl_area.x1 + padding) * scale,
             (self.pl_area.y2 + padding) * scale,
@@ -128,7 +143,7 @@ impl Individual {
             for p in &i.pins {
                 let ii = get_pin_rect(p);
                 backend.draw(&ii);
-                backend.draw(&label_pin(p));
+                //backend.draw(&label_pin(p));
             }
 
             /*
@@ -318,9 +333,9 @@ impl Individual {
         }
     }
 }
-/*
-fn tester(){
-
+/* 
+fn synth_pl() {
+    
     let placement_area = Bbox::new(0, 36, 0, 36);
     let pin_boxx = Bbox::new(0, 2, 0,1);
     let base_pin = Pin{refdes :"C1".to_string(), net: 0, bbox:pin_boxx };
@@ -379,10 +394,15 @@ fn tester(){
         components: comps,
         placement_area,
     };
+}
+*/
+
+fn tester(pl:Placement){
+    
     let pl_2 = pl.clone();
     let  id2 = Individual::new(pl_2);
     id2.plot("0.png");
-    let gen_mult = 100;
+    let gen_mult = 1;
     let test_cases: Vec<(usize, i32)> = vec![(10, 10000 * gen_mult ), (20, 5000 * gen_mult), (50,2000 * gen_mult), (100,1000 * gen_mult), (200, 500 * gen_mult), (500,200 * gen_mult)];
     for i in test_cases{
 
@@ -422,7 +442,8 @@ fn tester(){
             population.sort_by(|a: &Individual, b: &Individual| {
                 let a_s = a.score();
                 let b_s = b.score();
-                a_s.cmp(&b_s)}
+                
+                a_s.partial_cmp(&b_s).unwrap()}
             );
             population.truncate(pop_size);
         }
@@ -441,10 +462,16 @@ fn tester(){
 
 
 }
-    */
 fn main() {
-    let pl = parse_file();
-    let id = Individual::new(pl);
+    let mut pl = parse_file();
+    pl.components.truncate(5);
+    let mut pl2 = Placement{
+        placement_area: pl.placement_area.clone(),
+        components: pl.components.clone()
+    };
+    pl2.shift_placement(0.0, 0.0);
+    //println!("{:?}", pl2);
+    tester(pl2);
     //id.mutate();
-    id.plot("tester.png");
+    //id.plot("tester.png");
 }

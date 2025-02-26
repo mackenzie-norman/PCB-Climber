@@ -11,7 +11,7 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
     let x_y_str = passed_str.trim().replace(")", "");
     let x_y_vec: Vec<&str> = x_y_str.split(" ").collect();
     if x_y_vec.len() < 3 {
-        println!("{:?}", x_y_vec);
+        //println!("{:?}", x_y_vec);
         return None;
     }
 
@@ -22,19 +22,24 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
 }
 pub fn parse_file() -> Placement {
     // --snip--
+    let file_path = "..\\demo\\demo.kicad_pcb";
+    let file_path = "..\\demo\\layout1.kicad_pcb";
+    let file_path = "..\\BeagleBone_Black.unrouted.kicad_pcb";
     let file_path = "..\\arduino_kicad\\Arduino UNO.kicad_pcb";
-    //let file_path = "..\\demo\\demo.kicad_pcb";
     println!("In file {file_path}");
 
     let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
     let mut net_map: BTreeMap<i32, String> = BTreeMap::new();
     let mut comp_vec: Vec<Component> = Vec::new();
     //The layer used to calc the area of the foot print
+    let pcb_layer = "Edge.Cuts";
     let footprint_layer = "CrtYd";
-    let mut refdes = "some";
-    let mut x1: f64 = 0.0;
-    let mut y1: f64 = 0.0;
-    let mut rotation: i32 = 0;
+    let mut refdes: &String;
+    //= "some";
+    let mut x1: f64;
+     //= 0.0;
+    let mut y1: f64;
+    let mut rotation: i32;
     let mut content_iter = contents.split("\n");
     let mut in_doc = true;
     let mut xs: Vec<f64> = Vec::new();
@@ -85,16 +90,14 @@ pub fn parse_file() -> Placement {
                 .replace("\"", "")
                 .trim()
                 .to_string();
-            println!("new Device: {}", refdes_str.clone());
+            //println!("new Device: {}", refdes_str.clone());
             //println!("{}", refdes_str.clone());
             refdes = &refdes_str;
             //println!("{} at ({},{}) ", refdes_str, x1,y1);
             let mut in_shape: bool = true;
             while in_shape {
                 while !line.contains("fp_") {
-                    if refdes == "JP2" {
-                        println!("{}", line);
-                    }
+                    
                     //this might be where the loop ends?
                     line = content_iter.next().unwrap_or_else(|| {
                         in_shape = false;
@@ -143,36 +146,26 @@ pub fn parse_file() -> Placement {
                     }
                 }
             }
-            println!("OUT OF SHAPE");
             //now its pin time
             //
             if !xs.is_empty() {
                 xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
                 ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
                 let mut comp_bbox = Bbox::new(xs[0], xs[xs.len() - 1], ys[0], ys[ys.len() - 1]);
-                if rotation != 0 {
-                    comp_bbox.rotate(rotation as f64);
-                }
                 let mut pin_vec: Vec<Pin> = Vec::new();
-                if refdes == "JP2" {
-                    println!("{}", line);
-                }
+                
                 //outer pin loop
                 while !line.contains("model") && !line.starts_with("\t)") {
                     while !line.contains("pad ") {
                         line = content_iter.next().unwrap();
-                        if refdes == "JP2" {
-                            println!("{}", line);
-                        }
+                        
                         if line.contains("model") || line.starts_with("\t)") {
                             break;
                         }
                     }
                     if line.contains("model") || line.starts_with("\t)") {
-                        if refdes == "JP2" {
-                            println!("{}", line);
-                        }
-                        println!("Found all {} pins for {}", pin_vec.len(), refdes);
+                        
+                        //println!("Found all {} pins for {}", pin_vec.len(), refdes);
                         break;
                     }
                     if line.contains("pad ") {
@@ -181,8 +174,10 @@ pub fn parse_file() -> Placement {
                         let (mut px1, mut py1) = parse_kicad_line_to_floats(line).unwrap();
                         //px1 += comp_bbox.centerx;
                         //py1 += comp_bbox.centery;
-                        px1 = x1;
-                        py1 = y1;
+                        //px1 += comp_bbox.x1;
+                        //py1 += comp_bbox.y1;
+                        px1 += x1;
+                        py1 += y1;
                         line = content_iter.next().unwrap();
                         let (mut px2, mut py2) = parse_kicad_line_to_floats(line).unwrap();
                         px1 -= px2 / 2.0;
@@ -213,12 +208,15 @@ pub fn parse_file() -> Placement {
 
                 //println!("{}, {}",, ys[ys.len()-1]);
 
-                let comp: Component = Component {
+                let mut comp: Component = Component {
                     refdes: refdes.to_string(),
                     bbox: comp_bbox,
                     rotation: 0,
                     pins: pin_vec,
                 };
+                if rotation != 0 {
+                    comp.rotate_comp(rotation );
+                }
 
                 //println!("{:?}", comp.pins.len());
                 comp_vec.push(comp);
@@ -229,10 +227,50 @@ pub fn parse_file() -> Placement {
             //Bbox::new(xs[0], x2, y1, y2)
             //in_doc = line.contains("gr_rect");
         }
+        
+        if line.contains("(gr_"){
+            let start = content_iter.next().unwrap().trim();
+            let end = content_iter.next().unwrap().trim();
+            //println!("{line}");
+            while !line.contains("layer"){
+                line = content_iter.next().unwrap();
+                
+            }
+            if line.contains(pcb_layer){
+                let opt = parse_kicad_line_to_floats(start);
+                    match opt {
+                        Some(tple) => {
+                            let (x,y) = tple;
+                            xs.push(x );
+                            ys.push(y );
+                        }
+                        None    => ()
+                    }
+                    let opt = parse_kicad_line_to_floats(end);
+                    match opt {
+                        Some(tple) => {
+                            let (x,y) = tple;
+                            xs.push(x );
+                            ys.push(y );
+                        }
+                        None    => ()
+                    }
+            }
+            
+
+        }
     }
+
+    let mut pl_area = Bbox::new(0.0, 300.0, 0.0, 300.0);
+    if !xs.is_empty() {
+        xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        pl_area = Bbox::new(xs[0], xs[xs.len() - 1], ys[0], ys[ys.len() - 1]);
+    }
+
     Placement {
         components: comp_vec,
-        placement_area: Bbox::new(0.0, 300.0, 0.0, 300.0),
+        placement_area: pl_area
     }
     //println!("{:?}", net_map);
 }

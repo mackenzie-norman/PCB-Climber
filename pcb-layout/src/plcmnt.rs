@@ -89,8 +89,8 @@ impl Bbox {
         let angle_radians = angle_degrees * PI / 180.0;
 
         let rotate_point = |x: f64, y: f64| -> (f64, f64) {
-            let dx = (x - self.centerx);
-            let dy = (y - self.centery);
+            let dx = x - self.centerx;
+            let dy = y - self.centery;
             let sin = angle_radians.sin();
             let cos = angle_radians.cos();
 
@@ -112,8 +112,8 @@ impl Bbox {
         let angle_radians = angle_degrees * PI / 180.0;
 
         let rotate_point = |x: f64, y: f64| -> (f64, f64) {
-            let dx = (x - centerx);
-            let dy = (y - centery);
+            let dx = x - centerx;
+            let dy = y - centery;
             let sin = angle_radians.sin();
             let cos = angle_radians.cos();
 
@@ -128,6 +128,13 @@ impl Bbox {
         self.y1 = if ll.1 < ur.1 { ll.1 } else { ur.1 };
         self.x2 = if ll.0 > ur.0 { ll.0 } else { ur.0 };
         self.y2 = if ll.1 > ur.1 { ll.1 } else { ur.1 };
+        self.recenter();
+    }
+    pub fn move_bbx(&mut self, x: f64, y: f64) {
+        self.x1 += x;
+        self.y1 += y;
+        self.x2 += x;
+        self.y2 += y;
         self.recenter();
     }
     /*
@@ -212,11 +219,11 @@ impl Component {
         self.bbox.recenter();
         self.rotation += delta;
         self.rotation %= 360;
-        self.bbox.rotate(delta.as_f64());
         for pin in &mut self.pins {
             pin.bbox
                 .rotate_around_point(delta.as_f64(), self.bbox.centerx, self.bbox.centery);
         }
+        self.bbox.rotate(delta.as_f64());
         self.bbox.recenter();
     }
     pub fn get_width(&self) -> f64 {
@@ -350,4 +357,16 @@ pub fn is_valid(comps: &Vec<Component>) -> f64 {
     retur
 }
 
-impl Placement {}
+impl Placement {
+    pub fn shift_placement(&mut self, x:f64, y:f64) ->(f64,f64){
+        let delta_x = x -self.placement_area.x1 ;
+        let delta_y = y -self.placement_area.y1 ;
+        self.placement_area.move_bbx(delta_x, delta_y);
+        for comp in &mut self.components{
+            comp.move_comp(delta_x, delta_y);
+        }
+
+
+        (self.placement_area.x1 +delta_x, self.placement_area.y1 +delta_y)
+    }
+}
