@@ -48,4 +48,5 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 - Parallel 
 - shape traits for placment, comp, pin , bbox
 - actually plot nets
+- CLI 
 
