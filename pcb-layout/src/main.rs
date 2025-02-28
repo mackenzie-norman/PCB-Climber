@@ -309,7 +309,7 @@ fn generate_animation(pl:Placement) -> Vec<String>{
     }
     file_names
 }
-fn GA(pl: Placement, pop_size: u32, num_generations : u32){
+fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations : u32, output: bool){
     let mut population: Vec<Individual> = Vec::new();
     for _ in 0..pop_size{
         let pl_2 = pl.clone();
@@ -318,8 +318,10 @@ fn GA(pl: Placement, pop_size: u32, num_generations : u32){
 
     }
     let id = &mut population[0];
-    println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, num_generations).green());
-    println!("Original Score: {}", id.score());
+    if(output){
+        println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, num_generations).green());
+        println!("Original Score: {}", id.score());
+    }
     let now = Instant::now();
     for _ in 0..num_generations {
         for ind in &mut population{
@@ -344,12 +346,14 @@ fn GA(pl: Placement, pop_size: u32, num_generations : u32){
     /*
     */
     let id = &mut population[0];
-    println!("New Score: {}", id.score());
+    if output{
+        println!("New Score: {}", id.score());
 
-    id.plot(&format!("test-{}x{}.png", pop_size, num_generations), &pl.net_map);
-    let elapsed_time = now.elapsed();
-    println!("\nTest took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
-    println!("\n{}", "+++++++Test Over+++++++".to_string().green());
+        id.plot(&format!("test-{}x{}.png", pop_size, num_generations), &pl.net_map);
+        let elapsed_time = now.elapsed();
+        println!("\nTest took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
+        println!("\n{}", "+++++++Test Over+++++++".to_string().green());
+    }
 
 }
 fn tester(pl:Placement){
@@ -358,63 +362,9 @@ fn tester(pl:Placement){
     let  id2 = Individual::new(pl_2);
     id2.plot("0.png", &pl.net_map);
     let gen_mult = 1;
-    let test_cases: Vec<(usize, i32)> = vec![(10, 10000 * gen_mult ), (20, 5000 * gen_mult), (50,2000 * gen_mult), (100,1000 * gen_mult), (200, 500 * gen_mult), (500,200 * gen_mult)];
+    let test_cases: Vec<(u32 ,u32)> = vec![(10, 10000 * gen_mult ), (20, 5000 * gen_mult), (50,2000 * gen_mult), (100,1000 * gen_mult), (200, 500 * gen_mult), (500,200 * gen_mult)];
     for i in test_cases{
-
-        let mut population: Vec<Individual> = Vec::new();
-        let pop_size = i.0;
-        for _ in 0..pop_size{
-            let pl_2 = pl.clone();
-            let  id2 = Individual::new(pl_2);
-            population.push(id2);
-
-        }
-        let id = &mut population[0];
-        id.plot("0.png", &pl.net_map);
-        
-
-
-        // And if we want SVG backend
-        // let backend = SVGBackend::new("output.svg", (800, 600));
-        //backend.draw_rect((50, 50), (200, 150), &RED, true)?;
-        let id = &mut population[0];
-        id.plot("0.png", &pl.net_map);
-        println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, i.1).green());
-        println!("Original Score: {}", id.score());
-        let now = Instant::now();
-        //id.swap(1, 3);
-        //id.rotate(1, 90);
-        for _ in 0..i.1 {
-            for ind in &mut population{
-                ind.mutate();
-            }
-            for i in (0..pop_size).step_by(2){
-                let parent_a: & Individual = &population[i];
-                let parent_b: & Individual = &population[i + 1];
-                let child_a: Individual =  parent_a.crossover(parent_b);
-                let child_b: Individual =  parent_b.crossover(parent_a);
-                population.push(child_a);
-                population.push(child_b);
-            }
-            population.sort_by(|a: &Individual, b: &Individual| {
-                let a_s = a.score();
-                let b_s = b.score();
-                
-                a_s.partial_cmp(&b_s).unwrap()}
-            );
-            population.truncate(pop_size.try_into().unwrap());
-        }
-        /*
-        */
-        let id = &mut population[0];
-        println!("New Score: {}", id.score());
-
-        id.plot(&format!("test-{}x{}.png", pop_size, i.1), &pl.net_map);
-        let elapsed_time = now.elapsed();
-        println!("\nTest took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
-        println!("\n![{}]({})",&format!("test-{}x{}.png", pop_size, i.1),&format!("test-{}x{}.png", pop_size, i.1) );
-        println!("\n{}", "+++++++Test Over+++++++".to_string().green());
-        println!();
+        genetic_algorithim(pl.clone(), i.0 as u32, i.1, true);
     }
 
 
@@ -439,27 +389,15 @@ struct Args {
 }
 fn main() {
     let args = Args::parse();
-    let mut pl: Placement = parse_file(&args.file);
-    //pl.components.truncate(5);
-    let mut pl2 = Placement{
-        placement_area: pl.placement_area.clone(),
-        components: pl.components.clone(),
-        net_map:pl.net_map.clone()
-    };
+    let mut pl2: Placement = parse_file(&args.file);
     pl2.shift_placement(0.0, 0.0);
-    //println!("{:?}", pl2);
+    
     let test = args.test;
     if test{
         tester(pl2);
     }else{
-        GA(pl, args.population_size, args.generations)
-
+        genetic_algorithim(pl2, args.population_size, args.generations, true)
     }
-    /* 
-    */
-
-    
-    //println!("Hello {}!", args.file);
     
 
 }
