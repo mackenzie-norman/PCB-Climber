@@ -376,7 +376,7 @@ fn tester(pl:Placement){
 }
 fn main() {
     let mut pl = parse_file();
-    pl.components.truncate(5);
+    //pl.components.truncate(5);
     let mut pl2 = Placement{
         placement_area: pl.placement_area.clone(),
         components: pl.components.clone(),
