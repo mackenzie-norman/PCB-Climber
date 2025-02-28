@@ -24,3 +24,28 @@ running into a problem of how to only allow valid moves, need to make sure a mov
 ## Gave up on genomic representation (for now)
 - Got most of it working, had a hard time with rotation (I was lazy and tried chat gpt code)
 - Now something is causing the components to escape placement bounds 
+
+
+# Latest Update. 
+I've spent the last week or so dealing with parsing modern kicad. I really, really, wish the kicad parse crate worked but it doesn't. 
+I am well aware there are better ways to do this but I just want to make something that works well enough so I can run my algo on a real pcb
+
+We are using the arduino uno as our test board since its simple, (mostly) single sided, and maybe we can get good results (especially if we lock the micro controller)
+
+After I got this working, I couldn't figure out why my components liked going right to the edge. Turns out out I forgot to invert my out of bounds check so the only valid placements were ones that were out of bounds!
+
+After fixing this we are actually getting really "good" results. it is slow but not horribly so and honestly even compared to SOTA layout tools not that bad. 
+
+I still havent added the compaction mutator. I wish psu had a GA class since adding the compaction operator would shrink the search space so heavily I'm not sure it would be beneficial. 
+
+What I dont understand about GA's is how much your mutators should drive towards a better score and how much your selection criteria should. In my limited understanding, it would make sense for mutation and crossover ops to result in maximal variablitiy while selection criteria drives quality, thus a compaction operator might not be good. 
+
+It should also be noted we are SURELY being helped by starting from a "placed" board. 
+
+
+# TODOs
+- add from scratch fn
+- Parallel 
+- shape traits for placment, comp, pin , bbox
+- actually plot nets
+
