@@ -20,14 +20,18 @@ fn random_rotation() -> i32 {
 struct Individual {
     comp_list: Vec<Component>,
     pl_area: Bbox,
+    fitness: f64
 }
 
 impl Individual {
     fn new(pl: Placement) -> Self {
-        Individual {
+        let mut i = Individual {
             comp_list: pl.components,
             pl_area: pl.placement_area,
-        }
+            fitness: 0.0
+        };
+        i.score();
+        i
     }
     fn plot(&self, output_path: &str, net_map: &BTreeMap<i32, String>) {
         let padding = 10.0;
@@ -133,8 +137,9 @@ impl Individual {
         }
     }
 
-    fn score(&self) -> f64 {
-        is_valid(&self.comp_list) * placement_area(&self.comp_list) * hpwl(&self.comp_list)
+    fn score(&mut self) -> f64 {
+        self.fitness = is_valid(&self.comp_list) * placement_area(&self.comp_list) * hpwl(&self.comp_list);
+        self.fitness
     }
 
     fn rotate(&mut self, a: usize, rotation: i32) -> bool {
@@ -200,7 +205,9 @@ impl Individual {
         let mut child: Individual = Individual {
             comp_list: other.comp_list.clone(),
             pl_area: self.pl_area,
+            fitness: self.fitness
         };
+
         for comp in non_selected_comps {
             let comp_idx = child.refdes_to_indx(comp.refdes.clone());
             let could_move = child.move_comp(comp_idx, comp.bbox.x1, comp.bbox.y1);
@@ -208,6 +215,7 @@ impl Individual {
                 child.move_to_new(comp_idx);
             }
         }
+        child.score();
         child
     }
 
@@ -332,23 +340,25 @@ fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output
     for _ in 0..num_generations {
         for ind in &mut population {
             ind.mutate();
+            ind.score();
         }
         for i in (0..pop_size).step_by(2) {
             let parent_a: &Individual = &population[i as usize];
             let parent_b: &Individual = &population[(i + 1) as usize];
             let child_a: Individual = parent_a.crossover(parent_b);
             let child_b: Individual = parent_b.crossover(parent_a);
+            
             population.push(child_a);
             population.push(child_b);
         }
         population.sort_by(|a: &Individual, b: &Individual| {
-            let a_s = a.score();
-            let b_s = b.score();
+            let a_s = a.fitness;
+            let b_s = b.fitness;
 
             a_s.partial_cmp(&b_s).unwrap()
         });
         population.truncate(pop_size as usize);
-        scores.push(population[0].score());
+        scores.push(population[0].fitness);
     }
     /*
      */
@@ -416,6 +426,6 @@ fn main() {
         tester(pl2);
     } else {
         let scores =genetic_algorithim(pl2, args.population_size, args.generations, true);
-        println!("{:?}", scores);
+        //println!("{:?}", scores);
     }
 }

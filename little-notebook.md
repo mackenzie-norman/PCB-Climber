@@ -44,9 +44,14 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 
 
 # TODOs
-- add from scratch fn
+- change selection criteria
 - Parallel 
-- shape traits for placment, comp, pin , bbox
+- SPEED UP
 - actually plot nets
+- shape traits for placment, comp, pin , bbox
+- add from scratch fn
 - CLI 
+
+## Notes again. 
+- We calc score on every one on the sort. That is definetly inefficent to some degree. 
 
