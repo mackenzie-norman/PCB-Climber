@@ -3,13 +3,15 @@ This is my attempt to implement the GA described in this [paper](https://asmedig
 
 Note: since it is paywalled, and to make sure I knew what I was doing. I rewrote the key pieces here : [GA_breakdown.pdf](GA_breakdown.pdf)
 
+![GIF of placement](demo.gif)
+
 # Project Structure 
 There a 3 files, (maybe should be 4)
 - [plcmnt.rs](pcb-layout/src/plcmnt.rs)
 - [kicad_parse.rs](pcb-layout/src/kicad_parse.rs)
 - [main.rs](pcb-layout/src/main.rs)
 
-Main is our runner, cli, and has the struct and impl for our individual Kicad parse is for parsing kicad_pcb files. Its really ugly right now and kind of buggy I think. plcmnt has our struct representation of a pcb (basically)
+Main is our runner, cli, and has the struct and impl for our individual. Kicad parse is for parsing kicad_pcb files. Its really ugly right now and kind of buggy I think. plcmnt has our struct representation of a pcb (basically)
 
 I am attempting to keep an engineering notebook in [little-notebook.md](little-notebook.md).
 

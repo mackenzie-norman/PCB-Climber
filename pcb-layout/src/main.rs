@@ -304,15 +304,27 @@ fn synth_pl() {
 }
 */
 fn generate_animation(pl: Placement) -> Vec<String> {
-    let pl_2 = pl.clone();
-    let mut id2 = Individual::new(pl_2);
-    //id2.plot("anim//0.png", &pl.net_map);
+    let mut population: Vec<Individual> = Vec::new();
+    let mut scores: Vec<f64> = Vec::new();
     let frame_count = 100;
     let mut file_names = Vec::new();
+    let pop_size = 100;
+    for _ in 0..pop_size {
+        let pl_2 = pl.clone();
+        let id2 = Individual::new(pl_2);
+        population.push(id2);
+    }
     for count in 0..frame_count {
+        for ind in &mut population {
+            ind.mutate();
+            ind.score();
+        }
+        //elitist_selection(&mut population);
+        ev_selection(&mut population);
+        scores.push(population[0].fitness);
+        let id = &mut population[0];
         let fname = format!("anim//{}.png", count);
-        id2.plot(&fname, &pl.net_map);
-        id2.mutate();
+        id.plot(&fname, &pl.net_map);
         file_names.push(fname);
     }
     file_names
@@ -450,17 +462,27 @@ struct Args {
     ///Selection Type (ev or elitist)
     #[arg(short, long, default_value_t = false)]
     selection: bool,
+    ///Generate an animation 
+    #[arg(short, long, default_value_t = false)]
+    animate: bool,
+
 }
 fn main() {
     let args = Args::parse();
     let mut pl2: Placement = parse_file(&args.file);
     pl2.shift_placement(0.0, 0.0);
-
+    
     let test = args.test;
+    let anim = args.animate;
     if test {
         tester(pl2);
     } else {
-        let _scores =genetic_algorithim(pl2, args.population_size, args.generations, true);
+        if ! anim{
+
+            let _scores =genetic_algorithim(pl2, args.population_size, args.generations, true);
+        }else{
+            let _ = generate_animation(pl2);
+        }
         //println!("{:?}", scores);
     }
 }
