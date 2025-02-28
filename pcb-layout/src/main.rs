@@ -74,7 +74,7 @@ impl Individual {
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
         a_comp.move_to(x, y);
         let a_comp = &(self.comp_list[a - 1]);
-        let mut okay = a_comp.bbox.is_out_of_bounds(&self.pl_area);
+        let mut okay = ! a_comp.bbox.is_out_of_bounds(&self.pl_area);
 
         if okay {
             let mut count = 1;
@@ -122,11 +122,14 @@ impl Individual {
     fn move_to_new(&mut self, a: usize) {
         let mut rng = rand::rng();
         let qk_comp = self.comp_list[a - 1].bbox;
-        let x = rng.random_range(qk_comp.get_width_fl()..self.pl_area.x2);
-        let y = rng.random_range(qk_comp.get_height_fl()..self.pl_area.y2);
+        let x = rng.random_range(self.pl_area.x1..self.pl_area.x2);
+        let y = rng.random_range(self.pl_area.y1..self.pl_area.y2);
         //We need to zero, so lets grab the coords and also hold on to them
         //let a: usize = 2;
-        self.move_comp(a, x, y);
+        if self.move_comp(a, x, y){
+            
+            println!("{:?} : new points{},{}",self.pl_area, x,y);
+        }
     }
 
     fn score(&self) -> f64 {
@@ -138,7 +141,7 @@ impl Individual {
 
         a_comp.rotate_comp(rotation);
         let a_comp = &(self.comp_list[a - 1]);
-        let mut okay = a_comp.bbox.is_out_of_bounds(&self.pl_area);
+        let mut okay = ! a_comp.bbox.is_out_of_bounds(&self.pl_area);
 
         if okay {
             let mut count = 1;
@@ -211,7 +214,7 @@ impl Individual {
         let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
         let c = rng.random_range(1..4);
-
+        let c= 2;
         match c {
             1 => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);
@@ -290,6 +293,20 @@ fn synth_pl() {
     };
 }
 */
+fn generate_animation(pl:Placement) -> Vec<String>{
+    let pl_2 = pl.clone();
+    let mut id2 = Individual::new(pl_2);
+    //id2.plot("anim//0.png", &pl.net_map);
+    let frame_count = 100;
+    let mut file_names = Vec::new();
+    for count in 0..frame_count {
+        let fname = format!("anim//{}.png",count );
+        id2.plot(&fname, &pl.net_map);
+        id2.mutate();
+        file_names.push(fname);
+    }
+    file_names
+}
 
 fn tester(pl:Placement){
     
@@ -366,12 +383,14 @@ fn main() {
     };
     pl2.shift_placement(0.0, 0.0);
     //println!("{:?}", pl2);
-    let test = true;
+    let test = false;
     if test{
         tester(pl2);
     }else{
-        let mut id = Individual::new(pl2);
-        id.mutate();
-        id.plot("tester.png", &pl.net_map);
+        //let mut id = Individual::new(pl2);
+        //id.mutate();
+        //id.plot("tester.png", &pl.net_map);
+        let _file_names = generate_animation(pl2);
+
     }
 }
