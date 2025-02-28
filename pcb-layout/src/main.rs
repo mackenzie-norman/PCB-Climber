@@ -8,6 +8,7 @@ use plotters::prelude::*;
 use rand::prelude::*;
 use std::time::Instant;
 use std::collections::BTreeMap;
+use clap::Parser;
 
 fn random_rotation() -> i32 {
     // Get an RNG:
@@ -308,7 +309,49 @@ fn generate_animation(pl:Placement) -> Vec<String>{
     }
     file_names
 }
+fn GA(pl: Placement, pop_size: u32, num_generations : u32){
+    let mut population: Vec<Individual> = Vec::new();
+    for _ in 0..pop_size{
+        let pl_2 = pl.clone();
+        let  id2 = Individual::new(pl_2);
+        population.push(id2);
 
+    }
+    let id = &mut population[0];
+    println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, num_generations).green());
+    println!("Original Score: {}", id.score());
+    let now = Instant::now();
+    for _ in 0..num_generations {
+        for ind in &mut population{
+            ind.mutate();
+        }
+        for i in (0..pop_size).step_by(2){
+            let parent_a: & Individual = &population[i as usize];
+            let parent_b: & Individual = &population[(i + 1) as usize];
+            let child_a: Individual =  parent_a.crossover(parent_b);
+            let child_b: Individual =  parent_b.crossover(parent_a);
+            population.push(child_a);
+            population.push(child_b);
+        }
+        population.sort_by(|a: &Individual, b: &Individual| {
+            let a_s = a.score();
+            let b_s = b.score();
+                
+            a_s.partial_cmp(&b_s).unwrap()}
+        );
+        population.truncate(pop_size as usize);
+    }
+    /*
+    */
+    let id = &mut population[0];
+    println!("New Score: {}", id.score());
+
+    id.plot(&format!("test-{}x{}.png", pop_size, num_generations), &pl.net_map);
+    let elapsed_time = now.elapsed();
+    println!("\nTest took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
+    println!("\n{}", "+++++++Test Over+++++++".to_string().green());
+
+}
 fn tester(pl:Placement){
     
     let pl_2 = pl.clone();
@@ -326,7 +369,9 @@ fn tester(pl:Placement){
             population.push(id2);
 
         }
-
+        let id = &mut population[0];
+        id.plot("0.png", &pl.net_map);
+        
 
 
         // And if we want SVG backend
@@ -357,7 +402,7 @@ fn tester(pl:Placement){
                 
                 a_s.partial_cmp(&b_s).unwrap()}
             );
-            population.truncate(pop_size);
+            population.truncate(pop_size.try_into().unwrap());
         }
         /*
         */
@@ -366,16 +411,35 @@ fn tester(pl:Placement){
 
         id.plot(&format!("test-{}x{}.png", pop_size, i.1), &pl.net_map);
         let elapsed_time = now.elapsed();
-        println!("Test took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
-        println!("![{}]({})",&format!("test-{}x{}.png", pop_size, i.1),&format!("test-{}x{}.png", pop_size, i.1) );
-        println!("{}", "+++++++Test Over+++++++".to_string().green());
+        println!("\nTest took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
+        println!("\n![{}]({})",&format!("test-{}x{}.png", pop_size, i.1),&format!("test-{}x{}.png", pop_size, i.1) );
+        println!("\n{}", "+++++++Test Over+++++++".to_string().green());
         println!();
     }
 
 
 }
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Name of the .kicad_pcb file to use
+    #[arg(short, long, default_value_t = ("../arduino_kicad/arduino UNO.kicad_pcb".to_string()) )]
+    file: String,
+
+    /// Number of generations
+    #[arg(short, long, default_value_t = 1000)]
+    generations: u32,
+    /// How many individuals are in our popuation
+    #[arg(short, long, default_value_t = 100)]
+    population_size: u32,
+    ///Run the testing function on our file (will overwrite gen/pop) 
+    #[arg(short, long, default_value_t = false)]
+    test: bool,
+}
 fn main() {
-    let mut pl = parse_file();
+    let args = Args::parse();
+    let mut pl: Placement = parse_file(&args.file);
     //pl.components.truncate(5);
     let mut pl2 = Placement{
         placement_area: pl.placement_area.clone(),
@@ -384,14 +448,18 @@ fn main() {
     };
     pl2.shift_placement(0.0, 0.0);
     //println!("{:?}", pl2);
-    let test = true;
+    let test = args.test;
     if test{
         tester(pl2);
     }else{
-        //let mut id = Individual::new(pl2);
-        //id.mutate();
-        //id.plot("tester.png", &pl.net_map);
-        let _file_names = generate_animation(pl2);
+        GA(pl, args.population_size, args.generations)
 
     }
+    /* 
+    */
+
+    
+    //println!("Hello {}!", args.file);
+    
+
 }

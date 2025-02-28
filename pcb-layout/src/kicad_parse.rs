@@ -17,13 +17,13 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
         x_y_vec[2].parse::<f64>().unwrap(),
     ))
 }
-pub fn parse_file() -> Placement {
+pub fn parse_file(file_path : &str) -> Placement {
     // --snip--
     //let file_path = "..\\demo\\demo.kicad_pcb";
     //let file_path = "..\\demo\\layout1.kicad_pcb";
     //let file_path = "..\\BeagleBone_Black.unrouted.kicad_pcb";
-    let file_path = "..\\arduino_kicad\\Arduino UNO.kicad_pcb";
-    println!("In file {file_path}");
+    //let file_path = "..\\arduino_kicad\\Arduino UNO.kicad_pcb";
+    //println!("In file {file_path}");
 
     let contents = fs::read_to_string(file_path).expect("Should have been able to read the file");
     let mut net_map: BTreeMap<i32, String> = BTreeMap::new();
