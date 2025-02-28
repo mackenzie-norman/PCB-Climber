@@ -126,8 +126,9 @@ impl Individual {
         let y = rng.random_range(self.pl_area.y1..self.pl_area.y2);
         //We need to zero, so lets grab the coords and also hold on to them
         //let a: usize = 2;
-        if self.move_comp(a, x, y){
-            
+        let mved = self.move_comp(a, x, y);
+        let debug = false;
+        if debug  && mved{ 
             println!("{:?} : new points{},{}",self.pl_area, x,y);
         }
     }
@@ -383,7 +384,7 @@ fn main() {
     };
     pl2.shift_placement(0.0, 0.0);
     //println!("{:?}", pl2);
-    let test = false;
+    let test = true;
     if test{
         tester(pl2);
     }else{
