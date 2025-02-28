@@ -7,6 +7,7 @@ use kicad_parse::parse_file;
 use plotters::coord::types::RangedCoordf64;
 use plotters::prelude::*;
 use rand::prelude::*;
+use rand::distr::weighted::WeightedIndex;
 use std::collections::BTreeMap;
 use std::time::Instant;
 
@@ -125,7 +126,7 @@ impl Individual {
     }
     fn move_to_new(&mut self, a: usize) {
         let mut rng = rand::rng();
-        let qk_comp = self.comp_list[a - 1].bbox;
+        //let qk_comp = self.comp_list[a - 1].bbox;
         let x = rng.random_range(self.pl_area.x1..self.pl_area.x2);
         let y = rng.random_range(self.pl_area.y1..self.pl_area.y2);
         //We need to zero, so lets grab the coords and also hold on to them
@@ -316,6 +317,50 @@ fn generate_animation(pl: Placement) -> Vec<String> {
     }
     file_names
 }
+fn ev_selection( population : & mut Vec<Individual>){
+    let weights: Vec<f64> = population.iter().map(|i| i.fitness).collect();
+    let dist = WeightedIndex::new(&weights).unwrap();
+    let pop_size = population.len();
+    //let new_vec = Vec::new();
+    let mut rng = rand::rng();
+    for _  in 0..pop_size{
+        let parent_a: &Individual = &population[dist.sample(&mut rng)];
+        let parent_b: &Individual = &population[dist.sample(&mut rng)];
+        let child_a: Individual = parent_a.crossover(parent_b);
+        let child_b: Individual = parent_b.crossover(parent_a);
+        population.push(child_a);
+        population.push(child_b);
+         
+    }
+        population.sort_by(|a: &Individual, b: &Individual| {
+            let a_s = a.fitness;
+            let b_s = b.fitness;
+
+            a_s.partial_cmp(&b_s).unwrap()
+        });
+        population.truncate(pop_size as usize);
+
+}
+fn elitist_selection( population : & mut Vec<Individual>){
+    let pop_size = population.len();
+    for i in (0..pop_size).step_by(2) {
+        let parent_a: &Individual = &population[i as usize];
+        let parent_b: &Individual = &population[(i + 1) as usize];
+        let child_a: Individual = parent_a.crossover(parent_b);
+        let child_b: Individual = parent_b.crossover(parent_a);
+            
+        population.push(child_a);
+        population.push(child_b);
+    }
+    population.sort_by(|a: &Individual, b: &Individual| {
+        let a_s = a.fitness;
+        let b_s = b.fitness;
+
+        a_s.partial_cmp(&b_s).unwrap()
+    });
+    population.truncate(pop_size as usize);
+    
+}
 fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output: bool) -> Vec<f64> {
     let mut population: Vec<Individual> = Vec::new();
     let mut scores: Vec<f64> = Vec::new();
@@ -336,28 +381,15 @@ fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output
         );
         println!("Original Score: {}", id.score());
     }
+
     let now = Instant::now();
     for _ in 0..num_generations {
         for ind in &mut population {
             ind.mutate();
             ind.score();
         }
-        for i in (0..pop_size).step_by(2) {
-            let parent_a: &Individual = &population[i as usize];
-            let parent_b: &Individual = &population[(i + 1) as usize];
-            let child_a: Individual = parent_a.crossover(parent_b);
-            let child_b: Individual = parent_b.crossover(parent_a);
-            
-            population.push(child_a);
-            population.push(child_b);
-        }
-        population.sort_by(|a: &Individual, b: &Individual| {
-            let a_s = a.fitness;
-            let b_s = b.fitness;
-
-            a_s.partial_cmp(&b_s).unwrap()
-        });
-        population.truncate(pop_size as usize);
+        //elitist_selection(&mut population);
+        ev_selection(&mut population);
         scores.push(population[0].fitness);
     }
     /*
@@ -415,6 +447,9 @@ struct Args {
     ///Run the testing function on our file (will overwrite gen/pop)
     #[arg(short, long, default_value_t = false)]
     test: bool,
+    ///Selection Type (ev or elitist)
+    #[arg(short, long, default_value_t = false)]
+    selection: bool,
 }
 fn main() {
     let args = Args::parse();
@@ -425,7 +460,7 @@ fn main() {
     if test {
         tester(pl2);
     } else {
-        let scores =genetic_algorithim(pl2, args.population_size, args.generations, true);
+        let _scores =genetic_algorithim(pl2, args.population_size, args.generations, true);
         //println!("{:?}", scores);
     }
 }

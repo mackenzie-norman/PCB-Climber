@@ -54,4 +54,9 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 
 ## Notes again. 
 - We calc score on every one on the sort. That is definetly inefficent to some degree. 
+- added rough CLI using clap
+## Fixes
+- added fitness field to class. Now only calc when mutate (should add a check to only calc when successful)
+- added rough ev selector, think I want to add my weighting function to the elitist plan too
+
 
