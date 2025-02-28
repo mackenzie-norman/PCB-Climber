@@ -1,8 +1,8 @@
 #![allow(dead_code)]
 use num::integer::gcd;
 use plotters::prelude::LogScalable;
-use std::collections::BTreeMap;
 use plotters::prelude::*;
+use std::collections::BTreeMap;
 use std::f64::consts::PI;
 pub fn gcd_of_vector(nums: &[usize]) -> usize {
     let mut result = nums[0]; // Initialize with the first element
@@ -44,19 +44,15 @@ impl Bbox {
     }
     pub fn get_height_fl(&self) -> f64 {
         (self.y1 - self.y2).abs()
-    } 
-    pub fn plot(&self, color:&RGBColor) -> Rectangle<(f64, f64)> {
-        let ul: (f64, f64) = ( self.x1,self.y2 );
-        let br: (f64, f64) = (self.x2 ,self.y1 );
+    }
+    pub fn plot(&self, color: &RGBColor) -> Rectangle<(f64, f64)> {
+        let ul: (f64, f64) = (self.x1, self.y2);
+        let br: (f64, f64) = (self.x2, self.y1);
         Rectangle::new([ul, br], ShapeStyle::from(color.filled()))
     }
-    pub fn label_bbox(&self, label:String) -> Text<'_, (f64, f64), String>{
-        let ul: (f64, f64) = ( self.x1,self.y2 );
-        Text::new(
-            format!("({})", label ),
-            ul,
-            ("sans-serif", 15.0).into_font(),
-        )
+    pub fn label_bbox(&self, label: String) -> Text<'_, (f64, f64), String> {
+        let ul: (f64, f64) = (self.x1, self.y2);
+        Text::new(format!("({})", label), ul, ("sans-serif", 15.0).into_font())
     }
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
@@ -161,7 +157,7 @@ impl Bbox {
 pub struct Placement {
     pub components: Vec<Component>,
     pub placement_area: Bbox,
-    pub net_map:  BTreeMap<i32, String>
+    pub net_map: BTreeMap<i32, String>,
 }
 #[derive(Debug, Clone)]
 pub struct Pin {
@@ -347,15 +343,17 @@ pub fn is_valid(comps: &Vec<Component>) -> f64 {
 }
 
 impl Placement {
-    pub fn shift_placement(&mut self, x:f64, y:f64) ->(f64,f64){
-        let delta_x = x -self.placement_area.x1 ;
-        let delta_y = y -self.placement_area.y1 ;
+    pub fn shift_placement(&mut self, x: f64, y: f64) -> (f64, f64) {
+        let delta_x = x - self.placement_area.x1;
+        let delta_y = y - self.placement_area.y1;
         self.placement_area.move_bbx(delta_x, delta_y);
-        for comp in &mut self.components{
+        for comp in &mut self.components {
             comp.move_comp(delta_x, delta_y);
         }
 
-
-        (self.placement_area.x1 +delta_x, self.placement_area.y1 +delta_y)
+        (
+            self.placement_area.x1 + delta_x,
+            self.placement_area.y1 + delta_y,
+        )
     }
 }

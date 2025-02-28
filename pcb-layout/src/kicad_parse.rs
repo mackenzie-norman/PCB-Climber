@@ -17,7 +17,7 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
         x_y_vec[2].parse::<f64>().unwrap(),
     ))
 }
-pub fn parse_file(file_path : &str) -> Placement {
+pub fn parse_file(file_path: &str) -> Placement {
     // --snip--
     //let file_path = "..\\demo\\demo.kicad_pcb";
     //let file_path = "..\\demo\\layout1.kicad_pcb";
@@ -34,7 +34,7 @@ pub fn parse_file(file_path : &str) -> Placement {
     let mut refdes: &String;
     //= "some";
     let mut x1: f64;
-     //= 0.0;
+    //= 0.0;
     let mut y1: f64;
     let mut rotation: i32;
     let mut content_iter = contents.split("\n");
@@ -94,19 +94,16 @@ pub fn parse_file(file_path : &str) -> Placement {
             let mut in_shape: bool = true;
             while in_shape {
                 while !line.contains("fp_") {
-                    
                     //this might be where the loop ends?
                     line = content_iter.next().unwrap_or_else(|| {
                         in_shape = false;
                         "bad"
-
                     });
-                    
 
                     if line.contains("pad") {
                         in_shape = false
                     };
-                    if !in_shape{
+                    if !in_shape {
                         break;
                     }
                 }
@@ -126,20 +123,20 @@ pub fn parse_file(file_path : &str) -> Placement {
                     let opt = parse_kicad_line_to_floats(start);
                     match opt {
                         Some(tple) => {
-                            let (x,y) = tple;
+                            let (x, y) = tple;
                             xs.push(x + x1);
                             ys.push(y + y1);
                         }
-                        None    => ()
+                        None => (),
                     }
                     let opt = parse_kicad_line_to_floats(end);
                     match opt {
                         Some(tple) => {
-                            let (x,y) = tple;
+                            let (x, y) = tple;
                             xs.push(x + x1);
                             ys.push(y + y1);
                         }
-                        None    => ()
+                        None => (),
                     }
                 }
             }
@@ -148,20 +145,19 @@ pub fn parse_file(file_path : &str) -> Placement {
             if !xs.is_empty() {
                 xs.sort_by(|a, b| a.partial_cmp(b).unwrap());
                 ys.sort_by(|a, b| a.partial_cmp(b).unwrap());
-                let  comp_bbox = Bbox::new(xs[0], xs[xs.len() - 1], ys[0], ys[ys.len() - 1]);
+                let comp_bbox = Bbox::new(xs[0], xs[xs.len() - 1], ys[0], ys[ys.len() - 1]);
                 let mut pin_vec: Vec<Pin> = Vec::new();
-                
+
                 //outer pin loop
                 while !line.contains("model") && !line.starts_with("\t)") {
                     while !line.contains("pad ") {
                         line = content_iter.next().unwrap();
-                        
+
                         if line.contains("model") || line.starts_with("\t)") {
                             break;
                         }
                     }
                     if line.contains("model") || line.starts_with("\t)") {
-                        
                         //println!("Found all {} pins for {}", pin_vec.len(), refdes);
                         break;
                     }
@@ -212,7 +208,7 @@ pub fn parse_file(file_path : &str) -> Placement {
                     pins: pin_vec,
                 };
                 if rotation != 0 {
-                    comp.rotate_comp(rotation );
+                    comp.rotate_comp(rotation);
                 }
 
                 //println!("{:?}", comp.pins.len());
@@ -224,37 +220,34 @@ pub fn parse_file(file_path : &str) -> Placement {
             //Bbox::new(xs[0], x2, y1, y2)
             //in_doc = line.contains("gr_rect");
         }
-        
-        if line.contains("(gr_"){
+
+        if line.contains("(gr_") {
             let start = content_iter.next().unwrap().trim();
             let end = content_iter.next().unwrap().trim();
             //println!("{line}");
-            while !line.contains("layer"){
+            while !line.contains("layer") {
                 line = content_iter.next().unwrap();
-                
             }
-            if line.contains(pcb_layer){
+            if line.contains(pcb_layer) {
                 let opt = parse_kicad_line_to_floats(start);
-                    match opt {
-                        Some(tple) => {
-                            let (x,y) = tple;
-                            xs.push(x );
-                            ys.push(y );
-                        }
-                        None    => ()
+                match opt {
+                    Some(tple) => {
+                        let (x, y) = tple;
+                        xs.push(x);
+                        ys.push(y);
                     }
-                    let opt = parse_kicad_line_to_floats(end);
-                    match opt {
-                        Some(tple) => {
-                            let (x,y) = tple;
-                            xs.push(x );
-                            ys.push(y );
-                        }
-                        None    => ()
+                    None => (),
+                }
+                let opt = parse_kicad_line_to_floats(end);
+                match opt {
+                    Some(tple) => {
+                        let (x, y) = tple;
+                        xs.push(x);
+                        ys.push(y);
                     }
+                    None => (),
+                }
             }
-            
-
         }
     }
 
@@ -268,7 +261,7 @@ pub fn parse_file(file_path : &str) -> Placement {
     Placement {
         components: comp_vec,
         placement_area: pl_area,
-        net_map:net_map
+        net_map: net_map,
     }
     //println!("{:?}", net_map);
 }

@@ -1,14 +1,14 @@
 mod plcmnt;
 use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Placement};
 mod kicad_parse;
+use clap::Parser;
 use colored::Colorize;
 use kicad_parse::parse_file;
 use plotters::coord::types::RangedCoordf64;
 use plotters::prelude::*;
 use rand::prelude::*;
-use std::time::Instant;
 use std::collections::BTreeMap;
-use clap::Parser;
+use std::time::Instant;
 
 fn random_rotation() -> i32 {
     // Get an RNG:
@@ -19,7 +19,7 @@ fn random_rotation() -> i32 {
 }
 struct Individual {
     comp_list: Vec<Component>,
-    pl_area: Bbox,  
+    pl_area: Bbox,
 }
 
 impl Individual {
@@ -29,7 +29,7 @@ impl Individual {
             pl_area: pl.placement_area,
         }
     }
-    fn plot(&self, output_path: &str, net_map: &BTreeMap<i32, String> ) {
+    fn plot(&self, output_path: &str, net_map: &BTreeMap<i32, String>) {
         let padding = 10.0;
         let scale = 10.0;
 
@@ -47,20 +47,19 @@ impl Individual {
             (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
         ));
         let _ = backend.fill(&WHITE);
-        
+
         //plot pcb
         let _ = backend.draw(&self.pl_area.plot(&RGBColor(22, 77, 2)));
-        
+
         for i in &self.comp_list {
             //let _ =  backend.draw(&label_comp(i));
             let _ = backend.draw(&i.bbox.plot(&RGBColor(129, 133, 137)));
             for p in &i.pins {
                 let net_name = net_map.get(&p.net).unwrap();
-                if net_name.to_lowercase() =="gnd"{
+                if net_name.to_lowercase() == "gnd" {
                     let _ = backend.draw(&p.bbox.plot(&GREEN));
-                }else{
+                } else {
                     let _ = backend.draw(&p.bbox.plot(&RED));
-                    
                 }
                 //backend.draw(&label_pin(p));
             }
@@ -75,7 +74,7 @@ impl Individual {
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
         a_comp.move_to(x, y);
         let a_comp = &(self.comp_list[a - 1]);
-        let mut okay = ! a_comp.bbox.is_out_of_bounds(&self.pl_area);
+        let mut okay = !a_comp.bbox.is_out_of_bounds(&self.pl_area);
 
         if okay {
             let mut count = 1;
@@ -129,8 +128,8 @@ impl Individual {
         //let a: usize = 2;
         let mved = self.move_comp(a, x, y);
         let debug = false;
-        if debug  && mved{ 
-            println!("{:?} : new points{},{}",self.pl_area, x,y);
+        if debug && mved {
+            println!("{:?} : new points{},{}", self.pl_area, x, y);
         }
     }
 
@@ -143,7 +142,7 @@ impl Individual {
 
         a_comp.rotate_comp(rotation);
         let a_comp = &(self.comp_list[a - 1]);
-        let mut okay = ! a_comp.bbox.is_out_of_bounds(&self.pl_area);
+        let mut okay = !a_comp.bbox.is_out_of_bounds(&self.pl_area);
 
         if okay {
             let mut count = 1;
@@ -216,7 +215,7 @@ impl Individual {
         let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
         let c = rng.random_range(1..4);
-        let c= 2;
+        //let c = 2;
         match c {
             1 => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);
@@ -232,9 +231,9 @@ impl Individual {
         }
     }
 }
-/* 
+/*
 fn synth_pl() {
-    
+
     let placement_area = Bbox::new(0, 36, 0, 36);
     let pin_boxx = Bbox::new(0, 2, 0,1);
     let base_pin = Pin{refdes :"C1".to_string(), net: 0, bbox:pin_boxx };
@@ -295,79 +294,99 @@ fn synth_pl() {
     };
 }
 */
-fn generate_animation(pl:Placement) -> Vec<String>{
+fn generate_animation(pl: Placement) -> Vec<String> {
     let pl_2 = pl.clone();
     let mut id2 = Individual::new(pl_2);
     //id2.plot("anim//0.png", &pl.net_map);
     let frame_count = 100;
     let mut file_names = Vec::new();
     for count in 0..frame_count {
-        let fname = format!("anim//{}.png",count );
+        let fname = format!("anim//{}.png", count);
         id2.plot(&fname, &pl.net_map);
         id2.mutate();
         file_names.push(fname);
     }
     file_names
 }
-fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations : u32, output: bool){
+fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output: bool) -> Vec<f64> {
     let mut population: Vec<Individual> = Vec::new();
-    for _ in 0..pop_size{
+    let mut scores: Vec<f64> = Vec::new();
+    for _ in 0..pop_size {
         let pl_2 = pl.clone();
-        let  id2 = Individual::new(pl_2);
+        let id2 = Individual::new(pl_2);
         population.push(id2);
-
     }
     let id = &mut population[0];
-    if(output){
-        println!("{}", format!("+++++++Test (Population Size: {} , Generations {}) +++++++", pop_size, num_generations).green());
+    if output {
+        println!(
+            "{}",
+            format!(
+                "+++++++Test (Population Size: {} , Generations {}) +++++++",
+                pop_size, num_generations
+            )
+            .green()
+        );
         println!("Original Score: {}", id.score());
     }
     let now = Instant::now();
     for _ in 0..num_generations {
-        for ind in &mut population{
+        for ind in &mut population {
             ind.mutate();
         }
-        for i in (0..pop_size).step_by(2){
-            let parent_a: & Individual = &population[i as usize];
-            let parent_b: & Individual = &population[(i + 1) as usize];
-            let child_a: Individual =  parent_a.crossover(parent_b);
-            let child_b: Individual =  parent_b.crossover(parent_a);
+        for i in (0..pop_size).step_by(2) {
+            let parent_a: &Individual = &population[i as usize];
+            let parent_b: &Individual = &population[(i + 1) as usize];
+            let child_a: Individual = parent_a.crossover(parent_b);
+            let child_b: Individual = parent_b.crossover(parent_a);
             population.push(child_a);
             population.push(child_b);
         }
         population.sort_by(|a: &Individual, b: &Individual| {
             let a_s = a.score();
             let b_s = b.score();
-                
-            a_s.partial_cmp(&b_s).unwrap()}
-        );
+
+            a_s.partial_cmp(&b_s).unwrap()
+        });
         population.truncate(pop_size as usize);
+        scores.push(population[0].score());
     }
     /*
-    */
+     */
     let id = &mut population[0];
-    if output{
+    if output {
         println!("New Score: {}", id.score());
 
-        id.plot(&format!("test-{}x{}.png", pop_size, num_generations), &pl.net_map);
+        id.plot(
+            &format!("test-{}x{}.png", pop_size, num_generations),
+            &pl.net_map,
+        );
         let elapsed_time = now.elapsed();
-        println!("\nTest took {}.{} seconds.",elapsed_time.as_secs(), elapsed_time.subsec_millis());
+        println!(
+            "\nTest took {}.{} seconds.",
+            elapsed_time.as_secs(),
+            elapsed_time.subsec_millis()
+        );
         println!("\n{}", "+++++++Test Over+++++++".to_string().green());
     }
 
+    scores
 }
-fn tester(pl:Placement){
-    
+fn tester(pl: Placement) {
     let pl_2 = pl.clone();
-    let  id2 = Individual::new(pl_2);
+    let id2 = Individual::new(pl_2);
     id2.plot("0.png", &pl.net_map);
     let gen_mult = 1;
-    let test_cases: Vec<(u32 ,u32)> = vec![(10, 10000 * gen_mult ), (20, 5000 * gen_mult), (50,2000 * gen_mult), (100,1000 * gen_mult), (200, 500 * gen_mult), (500,200 * gen_mult)];
-    for i in test_cases{
-        genetic_algorithim(pl.clone(), i.0 as u32, i.1, true);
+    let test_cases: Vec<(u32, u32)> = vec![
+        (10, 10000 * gen_mult),
+        (20, 5000 * gen_mult),
+        (50, 2000 * gen_mult),
+        (100, 1000 * gen_mult),
+        (200, 500 * gen_mult),
+        (500, 200 * gen_mult),
+    ];
+    for i in test_cases {
+        genetic_algorithim(pl.clone(), i.0, i.1, true);
     }
-
-
 }
 
 #[derive(Parser, Debug)]
@@ -383,7 +402,7 @@ struct Args {
     /// How many individuals are in our popuation
     #[arg(short, long, default_value_t = 100)]
     population_size: u32,
-    ///Run the testing function on our file (will overwrite gen/pop) 
+    ///Run the testing function on our file (will overwrite gen/pop)
     #[arg(short, long, default_value_t = false)]
     test: bool,
 }
@@ -391,13 +410,12 @@ fn main() {
     let args = Args::parse();
     let mut pl2: Placement = parse_file(&args.file);
     pl2.shift_placement(0.0, 0.0);
-    
-    let test = args.test;
-    if test{
-        tester(pl2);
-    }else{
-        genetic_algorithim(pl2, args.population_size, args.generations, true)
-    }
-    
 
+    let test = args.test;
+    if test {
+        tester(pl2);
+    } else {
+        let scores =genetic_algorithim(pl2, args.population_size, args.generations, true);
+        println!("{:?}", scores);
+    }
 }
