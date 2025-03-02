@@ -18,6 +18,19 @@ fn random_rotation() -> i32 {
     let choice = opts.choose(&mut rng).unwrap();
     *choice
 }
+fn draw_nets( pins_by_net : BTreeMap<i32, Vec<(f64,f64)>>)  -> Vec<PathElement<(f64,f64)>>{
+    println!("{:?}", pins_by_net);
+    let mut end_v:Vec<PathElement<(f64,f64)>>  = Vec::new();
+    for v in pins_by_net.values(){
+        let tmp_points = v.clone();
+        end_v.push(PathElement::new(
+            tmp_points,
+            &RED));
+    }
+    end_v
+}
+/* 
+ */
 struct Individual {
     comp_list: Vec<Component>,
     pl_area: Bbox,
@@ -41,6 +54,10 @@ impl Individual {
         let pl_width = scale * (self.pl_area.get_width_fl() + padding * 2.0);
         let pl_height = scale * (self.pl_area.get_height_fl() + padding * 2.0);
         //let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
+        let mut pins_by_net : BTreeMap<i32, Vec<(f64,f64)>> = BTreeMap::new();
+        for k in net_map.keys(){
+            pins_by_net.insert(*k, Vec::new());
+        }
         let backend = BitMapBackend::new(
             output_path,
             (pl_width.floor() as u32, pl_height.round() as u32),
@@ -61,13 +78,26 @@ impl Individual {
             let _ = backend.draw(&i.bbox.plot(&RGBColor(129, 133, 137)));
             for p in &i.pins {
                 let net_name = net_map.get(&p.net).unwrap();
+                
                 if net_name.to_lowercase() == "gnd" {
                     let _ = backend.draw(&p.bbox.plot(&GREEN));
                 } else {
                     let _ = backend.draw(&p.bbox.plot(&RED));
+                    let my_vec = pins_by_net.get_mut(&p.net);
+                    match my_vec {
+                        Some(vec) => {
+                            vec.push((p.bbox.centerx, p.bbox.centery));
+                        },
+                        None => {}
+                    }
                 }
                 //backend.draw(&label_pin(p));
             }
+        }
+        let net_paths = draw_nets(pins_by_net);
+        println!("{}",net_paths.len());
+        for path in net_paths{
+            let _ = backend.draw(&path);
         }
         let _ = backend.present();
         /*

@@ -13,7 +13,7 @@ Checking overlap is hard too. Current naive implementation doesn't check on move
 Okay I think were ready to implement this for real ish
 ## ToDo
 - real genome rep
-- Scoring? 
+- ~~Scoring?~~ 
 - Actual algo still (the fun part with a GA is this is pretty easy)
 
 running into a problem of how to only allow valid moves, need to make sure a move
@@ -44,13 +44,13 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 
 
 # TODOs
-- change selection criteria
-- Parallel 
+- ~~change selection criteria~~
+- Parallel
 - SPEED UP
-- actually plot nets
+- ~~actually plot nets~~
 - shape traits for placment, comp, pin , bbox
 - add from scratch fn
-- CLI 
+- ~~CLI~~
 
 ## Notes again. 
 - We calc score on every one on the sort. That is definetly inefficent to some degree. 
@@ -58,5 +58,7 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 ## Fixes
 - added fitness field to class. Now only calc when mutate (should add a check to only calc when successful)
 - added rough ev selector, think I want to add my weighting function to the elitist plan too
+- add net plot, need to change it to ordered by distance sort of, just so its actually visible. I also need to figure out whats going on with my pins. They are there but aren't getting plotted.
+
 
 
