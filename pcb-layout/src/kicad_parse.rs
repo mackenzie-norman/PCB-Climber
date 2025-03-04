@@ -17,6 +17,14 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
         x_y_vec[2].parse::<f64>().unwrap(),
     ))
 }
+/// # Responsible for parsing a kicad
+/// Takes a filename as an &str
+/// 
+/// 
+/// 
+/// 
+/// 
+/// 
 pub fn parse_file(file_path: &str) -> Placement {
     // --snip--
     //let file_path = "..\\demo\\demo.kicad_pcb";
