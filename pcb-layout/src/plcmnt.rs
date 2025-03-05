@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 use num::integer::gcd;
 use plotters::prelude::LogScalable;
 use plotters::prelude::*;

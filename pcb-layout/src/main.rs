@@ -4,7 +4,7 @@ mod kicad_parse;
 use kicad_parse::parse_file;
 use clap::Parser;
 mod ga;
-use ga::{Individual, genetic_algorithim, generate_animation};
+use ga::{elitist_selection, ev_selection, generate_animation, genetic_algorithim, Individual};
 
 /*
 fn synth_pl() {
@@ -83,7 +83,7 @@ fn tester(pl: Placement) {
         (500, 200 * gen_mult),
     ];
     for i in test_cases {
-        genetic_algorithim(pl.clone(), i.0, i.1, true);
+        genetic_algorithim(pl.clone(), i.0, i.1, true, ev_selection);
     }
 }
 
@@ -113,17 +113,25 @@ struct Args {
 }
 fn main() {
     let args = Args::parse();
+    //Parse Our Kicad and put it at 0,0 
+    // (We can always move this back)
     let mut pl2: Placement = parse_file(&args.file);
     pl2.shift_placement(0.0, 0.0);
     
+    
     let test = args.test;
     let anim = args.animate;
+    let sel_type = args.selection;
+    let mut selection_algo: fn(&mut Vec<Individual>) = ev_selection;
+    if sel_type{
+        selection_algo = elitist_selection;
+    }
     if test {
         tester(pl2);
     } else {
         if ! anim{
 
-            let _scores =genetic_algorithim(pl2, args.population_size, args.generations, true);
+            let _scores =genetic_algorithim(pl2, args.population_size, args.generations, true, selection_algo);
         }else{
             let _ = generate_animation(pl2);
         }

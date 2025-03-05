@@ -16,8 +16,9 @@ fn random_rotation() -> i32 {
     let choice = opts.choose(&mut rng).unwrap();
     *choice
 }
+/// Helper function for drawing each net
+/// 
 fn draw_nets( pins_by_net : BTreeMap<i32, Vec<(f64,f64)>>)  -> Vec<PathElement<(f64,f64)>>{
-    println!("{:?}", pins_by_net);
     let mut end_v:Vec<PathElement<(f64,f64)>>  = Vec::new();
     for v in pins_by_net.values(){
         let mut tmp_points = v.clone();
@@ -94,7 +95,7 @@ impl Individual {
             }
         }
         let net_paths = draw_nets(pins_by_net);
-        println!("{}",net_paths.len());
+        //println!("{}",net_paths.len());
         for path in net_paths{
             let _ = backend.draw(&path);
         }
@@ -153,7 +154,7 @@ impl Individual {
         }
         true
     }
-    fn move_to_new(&mut self, a: usize) {
+    fn move_to_new(&mut self, a: usize) -> bool {
         let mut rng = rand::rng();
         //let qk_comp = self.comp_list[a - 1].bbox;
         let x = rng.random_range(self.pl_area.x1..self.pl_area.x2);
@@ -165,6 +166,7 @@ impl Individual {
         if debug && mved {
             println!("{:?} : new points{},{}", self.pl_area, x, y);
         }
+        mved
     }
 
     fn score(&mut self) -> f64 {
@@ -249,7 +251,7 @@ impl Individual {
         child
     }
 
-    fn mutate(&mut self) {
+    fn mutate(&mut self) -> bool {
         let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
         let c = rng.random_range(1..4);
@@ -257,15 +259,15 @@ impl Individual {
         match c {
             1 => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);
-                self.swap(a, b);
+                self.swap(a, b)
             }
             2 => {
-                self.move_to_new(a);
+                self.move_to_new(a)
             }
             3 => {
-                self.rotate(a, random_rotation());
+                self.rotate(a, random_rotation())
             }
-            _ => {}
+            _ => {false}
         }
     }
 }
@@ -296,7 +298,7 @@ pub fn generate_animation(pl: Placement) -> Vec<String> {
     }
     file_names
 }
-fn ev_selection( population : & mut Vec<Individual>){
+pub fn ev_selection( population : & mut Vec<Individual>){
     let weights: Vec<f64> = population.iter().map(|i| i.fitness).collect();
     let dist = WeightedIndex::new(&weights).unwrap();
     let pop_size = population.len();
@@ -320,7 +322,7 @@ fn ev_selection( population : & mut Vec<Individual>){
         population.truncate(pop_size as usize);
 
 }
-fn elitist_selection( population : & mut Vec<Individual>){
+pub fn elitist_selection( population : & mut Vec<Individual>){
     let pop_size = population.len();
     for i in (0..pop_size).step_by(2) {
         let parent_a: &Individual = &population[i as usize];
@@ -340,7 +342,8 @@ fn elitist_selection( population : & mut Vec<Individual>){
     population.truncate(pop_size as usize);
     
 }
-pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output: bool) -> Vec<f64> {
+/// The actual runner for our GA
+pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output: bool, selection_algo: fn( & mut Vec<Individual>) -> () ) -> Vec<f64> {
     let mut population: Vec<Individual> = Vec::new();
     let mut scores: Vec<f64> = Vec::new();
     for _ in 0..pop_size {
@@ -364,11 +367,12 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
     let now = Instant::now();
     for _ in 0..num_generations {
         for ind in &mut population {
-            ind.mutate();
-            ind.score();
+            if ind.mutate(){
+                ind.score();
+            }
         }
         //elitist_selection(&mut population);
-        ev_selection(&mut population);
+        selection_algo(&mut population);
         scores.push(population[0].fitness);
     }
     /*
