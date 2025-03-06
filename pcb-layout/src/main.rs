@@ -104,7 +104,7 @@ fn tester(pl: Placement) {
         (500, 200 * gen_mult),
     ];
     for i in test_cases {
-        genetic_algorithim(pl.clone(), i.0, i.1, true, ev_selection);
+        genetic_algorithim(pl.clone(), i.0, i.1, true, ev_selection, 1);
     }
 }
 
@@ -130,6 +130,9 @@ struct Args {
     ///Generate an animation 
     #[arg(short, long, default_value_t = false)]
     animate: bool,
+    ///Number of threads 
+    #[arg(short, long, default_value_t = 1)]
+    threads: u32,
 
 }
 fn main() {
@@ -158,7 +161,7 @@ fn main() {
     } else {
         if ! anim{
 
-            let _scores =genetic_algorithim(pl2, args.population_size, args.generations, true, selection_algo);
+            let _scores =genetic_algorithim(pl2, args.population_size, args.generations, true, selection_algo, args.threads);
         }else{
             let _ = generate_animation(pl2);
         }

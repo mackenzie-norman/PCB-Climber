@@ -9,6 +9,9 @@ use rand::distr::weighted::WeightedIndex;
 use std::collections::BTreeMap;
 use std::time::Instant;
 
+use std::thread;
+
+
 fn random_rotation() -> i32 {
     // Get an RNG:
     let mut rng = rand::rng();
@@ -343,8 +346,9 @@ pub fn elitist_selection( population : & mut Vec<Individual>){
     
 }
 /// The actual runner for our GA
-pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output: bool, selection_algo: fn( & mut Vec<Individual>) -> () ) -> Vec<f64> {
+pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output: bool, selection_algo: fn( & mut Vec<Individual>) -> (), nthreads: u32 ) -> Vec<f64> {
     let mut population: Vec<Individual> = Vec::new();
+    //let mut children = vec![];
     let mut scores: Vec<f64> = Vec::new();
     for _ in 0..pop_size {
         let pl_2 = pl.clone();
@@ -366,11 +370,18 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
 
     let now = Instant::now();
     for _ in 0..num_generations {
-        for ind in &mut population {
-            if ind.mutate(){
-                ind.score();
-            }
+    thread::scope(|scope| {
+        for ind_vec in population.chunks_mut((pop_size/nthreads).try_into().unwrap()){
+            scope.spawn( || {
+                for ind in ind_vec {
+                    if ind.mutate(){
+                        ind.score();
+                    }
+                }
+            });
+
         }
+    });
         //elitist_selection(&mut population);
         selection_algo(&mut population);
         scores.push(population[0].fitness);
