@@ -1,17 +1,9 @@
-use num::integer::gcd;
+
 use plotters::prelude::LogScalable;
 use plotters::prelude::*;
 use std::collections::BTreeMap;
 use std::f64::consts::PI;
-pub fn gcd_of_vector(nums: &[usize]) -> usize {
-    let mut result = nums[0]; // Initialize with the first element
 
-    for num in nums.iter().skip(1) {
-        result = gcd(result, *num); // Calculate LCM for each pair
-    }
-
-    result
-}
 #[derive(Debug, Copy, Clone)]
 pub struct Bbox {
     pub x1: f64,
@@ -49,10 +41,7 @@ impl Bbox {
         let br: (f64, f64) = (self.x2, self.y1);
         Rectangle::new([ul, br], ShapeStyle::from(color.filled()))
     }
-    pub fn label_bbox(&self, label: String) -> Text<'_, (f64, f64), String> {
-        let ul: (f64, f64) = (self.x1, self.y2);
-        Text::new(format!("({})", label), ul, ("sans-serif", 15.0).into_font())
-    }
+    
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
     }
@@ -120,37 +109,7 @@ impl Bbox {
         self.y2 += y;
         self.recenter();
     }
-    /*
-    pub fn rotate(&mut self, angle: i32) {
-        match angle {
-            90 => {
-                let height = self.get_height();
-                let width = self.get_width();
-                self.x2 = self.x1 + height as i32;
-                self.y2 = self.y1 + width as i32;
-            }
-            180 => {
-                let height = self.get_height();
-                let width = self.get_width();
-                //self.x1 = self.x2
-
-                self.y2 = self.y1;
-                self.y1 = self.y1 - height as i32;
-                self.x2 = self.x1 + width as i32;
-            }
-
-            270 => {
-                let height = self.get_height();
-                let width = self.get_width();
-                self.x2 = self.x1;
-                self.y2 = self.y1;
-                self.x1 = self.x2 - height as i32;
-                self.y1 = self.y2 - width as i32;
-            }
-            _ => (),
-        }
-    }
-    */
+    
 }
 #[derive(Debug, Clone)]
 pub struct Placement {
@@ -159,12 +118,15 @@ pub struct Placement {
     pub net_map: BTreeMap<i32, String>,
 }
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct Pin {
+    
     pub refdes: String,
     pub net: i32,
     pub bbox: Bbox,
 }
 impl Pin {
+    
     pub fn move_pin(&mut self, x: f64, y: f64) {
         self.bbox.x1 += x;
         self.bbox.y1 += y;
@@ -172,6 +134,7 @@ impl Pin {
         self.bbox.y2 += y;
         self.bbox.recenter();
     }
+    
 }
 #[derive(Debug, Clone)]
 pub struct Component {
@@ -181,14 +144,7 @@ pub struct Component {
     pub pins: Vec<Pin>,
 }
 impl Component {
-    fn string(&self) -> String {
-        self.refdes.clone()
-            + " at ("
-            + &self.bbox.centerx.to_string()
-            + ","
-            + &self.bbox.centery.to_string()
-            + ")"
-    }
+    
     pub fn move_comp(&mut self, x: f64, y: f64) {
         self.bbox.x1 += x;
         self.bbox.y1 += y;
@@ -210,40 +166,18 @@ impl Component {
         self.bbox.rotate(delta.as_f64());
         self.bbox.recenter();
     }
-    pub fn get_width(&self) -> f64 {
-        self.bbox.get_width_fl()
-    }
-    pub fn get_height(&self) -> f64 {
-        self.bbox.get_height_fl()
-    }
+    
     pub fn move_to(&mut self, x: f64, y: f64) {
         self.bbox.recenter();
         let delta_x = x - self.bbox.x1;
         let delta_y = y - self.bbox.y1;
         self.move_comp(delta_x, delta_y);
     }
-    pub fn get_center(&self) -> (f64, f64) {
-        //self.bbox.recenter();
-        (self.bbox.centerx, self.bbox.centery)
-    }
-    pub fn try_move_to(&self, x: f64, y: f64) -> Bbox {
-        let delta_x = x - self.bbox.x1;
-        let delta_y = y - self.bbox.y1;
-        Bbox::new(
-            self.bbox.x1 + delta_x,
-            self.bbox.y1 + delta_y,
-            self.bbox.x2 + delta_x,
-            self.bbox.y2 + delta_y,
-        )
-    }
     pub fn set_refdes(&mut self, new_ref: String) {
         self.refdes = new_ref.clone();
         for pin in &mut self.pins {
             pin.refdes = new_ref.clone();
         }
-    }
-    pub fn is_negative(&self) -> bool {
-        self.bbox.x1 < 0.0 || self.bbox.y1 < 0.0
     }
 }
 ///This assumes all comps are on the same net lol
@@ -257,7 +191,7 @@ pub fn hpwl(comps: &Vec<Component>) -> f64 {
     let ignore_gnd = true;
     for i in comps {
         for pin in &i.pins {
-            if ignore_gnd && pin.net != 0 {
+            if ignore_gnd && pin.net != 11 {
                 if let std::collections::btree_map::Entry::Vacant(e) = pin_by_node.entry(pin.net) {
                     e.insert(vec![pin]);
                 } else {

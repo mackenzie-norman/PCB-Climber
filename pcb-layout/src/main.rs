@@ -1,20 +1,26 @@
 mod plcmnt;
-use plcmnt::Placement;
+use std::collections::BTreeMap;
+
+
+use plcmnt::{Component, Pin, Placement, Bbox};
 mod kicad_parse;
 use kicad_parse::parse_file;
 use clap::Parser;
 mod ga;
 use ga::{elitist_selection, ev_selection, generate_animation, genetic_algorithim, Individual};
+/// # Generates a really simple placement 
+/// 
+/// 
+/// 
+/// 
+fn gen_synth_pl() -> Placement {
 
-/*
-fn synth_pl() {
-
-    let placement_area = Bbox::new(0, 36, 0, 36);
-    let pin_boxx = Bbox::new(0, 2, 0,1);
+    let placement_area = Bbox::new(0.0, 36.0, 0.0, 36.0);
+    let pin_boxx = Bbox::new(0.0, 2.0, 0.0,1.0);
     let base_pin = Pin{refdes :"C1".to_string(), net: 0, bbox:pin_boxx };
     let mut base_pin_2 = Pin{refdes :"C1".to_string(), net: 1, bbox:pin_boxx };
-    base_pin_2.move_pin(0, 3);
-    let boxx = Bbox::new(0, 2, 0, 4);
+    base_pin_2.move_pin(0.0, 3.0);
+    let boxx = Bbox::new(0.0, 2.0, 0.0, 4.0);
     let mut c1 = Component {
         refdes: "C1".to_string(),
         bbox: boxx,
@@ -25,10 +31,10 @@ fn synth_pl() {
     let mut b_pin2 = base_pin_2.clone();
     b_pin.refdes = "C2".to_string();
     b_pin2.refdes = "C2".to_string();
-    b_pin.move_pin(34, 32);
-    b_pin2.move_pin(34, 32);
+    b_pin.move_pin(34.0, 32.0);
+    b_pin2.move_pin(34.0, 32.0);
     b_pin2.net = 2;
-    let box2 = Bbox::new(34, 36, 32, 36);
+    let box2 = Bbox::new(34.0, 36.0, 32.0, 36.0);
     let c2 = Component {
         refdes: "C2".to_string(),
         bbox: box2,
@@ -36,12 +42,12 @@ fn synth_pl() {
         pins : vec![b_pin, b_pin2]
     };
     let mut base_pin = Pin{refdes :"C3".to_string(), net: 0, bbox:pin_boxx };
-    base_pin.move_pin(11, 5);
+    base_pin.move_pin(11.0, 5.0);
     let mut base_pin_2 = Pin{refdes :"C3".to_string(), net: 1, bbox:pin_boxx };
-    base_pin_2.move_pin(7, 5);
+    base_pin_2.move_pin(7.0, 5.0);
     let mut base_pin_3 = Pin{refdes :"C3".to_string(), net: 2, bbox:pin_boxx };
-    base_pin_3.move_pin(4, 0);
-    let box3 = Bbox::new(4, 13, 0, 6);
+    base_pin_3.move_pin(4.0, 0.0);
+    let box3 = Bbox::new(4.0, 13.0, 0.0, 6.0);
     let mut c3 = Component {
         refdes: "C3".to_string(),
         bbox: box3,
@@ -52,23 +58,38 @@ fn synth_pl() {
     c4.set_refdes("C4".to_string());
     let mut c5 = c1.clone();
     c5.set_refdes("C5".to_string());
-    c1.move_comp(6, 6);
+    c1.move_comp(6.0, 6.0);
     //c2.move_comp(6, 6);
-    c4.move_comp(0, -6);
-    c5.move_comp(15, 2);
-    c3.move_comp(6, 6);
+    c4.move_comp(0.0, -6.0);
+    c5.move_comp(15.0, 2.0);
+    c3.move_comp(6.0, 6.0);
     //c1.move_comp( 10, 11);
     //for i in 1..2000{ c1.rotate_comp(90);};
     c3.rotate_comp(180);
     //c3.rotate_comp(90);
     let comps: Vec<Component> = vec![c1, c2,c3,c4, c5];
-
+    let mut net_map: BTreeMap<i32, String> = BTreeMap::new();
+    net_map.insert(0, "GND".to_string());
+    net_map.insert(1, "5V+".to_string());
+    net_map.insert(2, "5V+".to_string());
     let pl = Placement {
         components: comps,
         placement_area,
+        net_map
     };
+    pl
 }
-*/
+
+///# Runs our simple test suite
+/// This will output the time, the score, and save a picture
+/// ## Test Cases
+/// - Population: 10, Generation Count: 10000 
+/// - Population: 20, Generation Count: 5000 
+/// - Population: 50, Generation Count: 2000 
+/// - Population: 100, Generation Count: 1000 
+/// - Population: 200, Generation Count: 500 
+/// - Population: 500, Generation Count: 200 
+/// 
 fn tester(pl: Placement) {
     let pl_2 = pl.clone();
     let id2 = Individual::new(pl_2);
@@ -90,8 +111,8 @@ fn tester(pl: Placement) {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Name of the .kicad_pcb file to use
-    #[arg(short, long, default_value_t = ("../arduino_kicad/arduino UNO.kicad_pcb".to_string()) )]
+    /// Name of the .kicad_pcb file to use. Use synthetic to generate a fake board
+    #[arg(short, long, default_value_t = ("../arduino_kicad/arduino UNO.kicad_pcb").to_string() )]
     file: String,
 
     /// Number of generations
@@ -115,7 +136,13 @@ fn main() {
     let args = Args::parse();
     //Parse Our Kicad and put it at 0,0 
     // (We can always move this back)
-    let mut pl2: Placement = parse_file(&args.file);
+    let mut pl2: Placement;
+    if &args.file == "synthetic"{
+
+        pl2 = gen_synth_pl();
+    } else{
+        pl2 = parse_file(&args.file);
+    }
     pl2.shift_placement(0.0, 0.0);
     
     
@@ -135,6 +162,5 @@ fn main() {
         }else{
             let _ = generate_animation(pl2);
         }
-        //println!("{:?}", scores);
     }
 }
