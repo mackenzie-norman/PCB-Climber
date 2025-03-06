@@ -60,5 +60,10 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 - added rough ev selector, think I want to add my weighting function to the elitist plan too
 - add net plot, need to change it to ordered by distance sort of, just so its actually visible. I also need to figure out whats going on with my pins. They are there but aren't getting plotted.
 
+## Parallel Notes
+- initially implemented parallel mutations, but almost no speed up - even when we have a large population size
+- Most likely want to switch to parallel implementation with different "communities" and reusing our selection operator for a migration operator
+
+
 
 
