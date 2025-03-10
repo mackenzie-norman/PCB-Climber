@@ -12,11 +12,11 @@ use std::time::Instant;
 use std::thread;
 
 
-fn random_rotation() -> i32 {
+fn random_rotation(rng: &mut ThreadRng) -> i32 {
     // Get an RNG:
-    let mut rng = rand::rng();
+    //let mut rng = rand::rng();
     let opts = [90, 180, 270];
-    let choice = opts.choose(&mut rng).unwrap();
+    let choice = opts.choose( rng).unwrap();
     *choice
 }
 /// Helper function for drawing each net
@@ -37,7 +37,9 @@ fn draw_nets( pins_by_net : BTreeMap<i32, Vec<(f64,f64)>>)  -> Vec<PathElement<(
 pub struct Individual {
     comp_list: Vec<Component>,
     pl_area: Bbox,
-    fitness: f64
+    fitness: f64,
+    
+
 }
 
 impl Individual {
@@ -50,6 +52,8 @@ impl Individual {
         i.score();
         i
     }
+    /// Our Plotting Function
+    /// Uses the net map to plot the GND pins as green
     pub fn plot(&self, output_path: &str, net_map: &BTreeMap<i32, String>) {
         let padding = 10.0;
         let scale = 10.0;
@@ -67,8 +71,8 @@ impl Individual {
         )
         .into_drawing_area();
         let backend = backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
-            0f64..self.pl_area.get_width_fl(),
-            0f64..self.pl_area.get_height_fl(),
+            0f64..self.pl_area.get_width_fl() ,
+            0f64..self.pl_area.get_height_fl() ,
             (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
         ));
         let _ = backend.fill(&WHITE);
@@ -133,7 +137,7 @@ impl Individual {
             //println!("{}", "GOOD".green());
         }
     }
-    fn swap(&mut self, a: usize, b: usize) -> bool {
+    fn swap(&mut self, a: usize, b: usize, rng: &ThreadRng)-> bool {
         //We need to zero, so lets grab the coords and also hold on to them
         let a_comp = &(self.comp_list[a - 1]);
         let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
@@ -157,8 +161,8 @@ impl Individual {
         }
         true
     }
-    fn move_to_new(&mut self, a: usize) -> bool {
-        let mut rng = rand::rng();
+    fn move_to_new(&mut self, a: usize, rng: &mut ThreadRng) -> bool {
+        //let mut rng = rand::rng();
         //let qk_comp = self.comp_list[a - 1].bbox;
         let x = rng.random_range(self.pl_area.x1..self.pl_area.x2);
         let y = rng.random_range(self.pl_area.y1..self.pl_area.y2);
@@ -213,7 +217,7 @@ impl Individual {
         }
         0
     }
-    fn crossover(&self, other: &Individual) -> Individual {
+    fn crossover(&self, other: &Individual, ) -> Individual {
         //assert!() // add assertion to ensure they are same size
         let mut rng = rand::rng();
         let x1 = rng.random_range(0.0..self.pl_area.x2);
@@ -247,7 +251,7 @@ impl Individual {
             let comp_idx = child.refdes_to_indx(comp.refdes.clone());
             let could_move = child.move_comp(comp_idx, comp.bbox.x1, comp.bbox.y1);
             if !could_move {
-                child.move_to_new(comp_idx);
+                child.move_to_new(comp_idx, & mut rng );
             }
         }
         child.score();
@@ -262,13 +266,13 @@ impl Individual {
         match c {
             1 => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);
-                self.swap(a, b)
+                self.swap(a, b, &mut rng)
             }
             2 => {
-                self.move_to_new(a)
+                self.move_to_new(a, &mut rng)
             }
             3 => {
-                self.rotate(a, random_rotation())
+                self.rotate(a, random_rotation(& mut rng ))
             }
             _ => {false}
         }
@@ -301,6 +305,8 @@ pub fn generate_animation(pl: Placement) -> Vec<String> {
     }
     file_names
 }
+/// Simple selector using  monte-carlo
+/// 
 pub fn ev_selection( population : & mut Vec<Individual>){
     let weights: Vec<f64> = population.iter().map(|i| i.fitness).collect();
     let dist = WeightedIndex::new(&weights).unwrap();
