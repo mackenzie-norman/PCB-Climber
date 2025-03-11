@@ -310,7 +310,7 @@ pub fn generate_animation(pl: Placement) -> Vec<String> {
 /// Simple selector using  monte-carlo
 /// 
 pub fn ev_selection( population : & mut Vec<Individual>){
-    let weights: Vec<f64> = population.iter().map(|i| i.fitness).collect();
+    let weights: Vec<f64> = population.iter().map(|i| 1.0/i.fitness).collect();
     let dist = WeightedIndex::new(&weights).unwrap();
     let pop_size = population.len();
     //let new_vec = Vec::new();
@@ -318,18 +318,20 @@ pub fn ev_selection( population : & mut Vec<Individual>){
     for _  in 0..pop_size{
         let parent_a: &Individual = &population[dist.sample(&mut rng)];
         let parent_b: &Individual = &population[dist.sample(&mut rng)];
+        //Its important to note after crossover the children *should* be scored
         let child_a: Individual = parent_a.crossover(parent_b);
         let child_b: Individual = parent_b.crossover(parent_a);
         population.push(child_a);
         population.push(child_b);
          
     }
-        population.sort_by(|a: &Individual, b: &Individual| {
-            let a_s = a.fitness;
-            let b_s = b.fitness;
+        //population.sort_by(|a: &Individual, b: &Individual| {
+            //let a_s = a.fitness;
+            //let b_s = b.fitness;
 
-            a_s.partial_cmp(&b_s).unwrap()
-        });
+            //a_s.partial_cmp(&b_s).unwrap()
+        //});
+        population.reverse();
         population.truncate(pop_size as usize);
 
 }
@@ -354,6 +356,10 @@ pub fn elitist_selection( population : & mut Vec<Individual>){
     
 }
 /// The actual runner for our GA
+/// takes an initial placement, the size of each population, the number of generations it can run, 
+/// should it output and a closure representing the selection/crossover operator. (and now the number of "threads")
+/// Reccomended values I don't know
+/// It should return a vec of scores so you can plot performance if you want
 pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, output: bool, selection_algo: fn( & mut Vec<Individual>) -> (), nthreads: u32 ) -> Vec<f64> {
     let mut population: Vec<Individual> = Vec::new();
     //let mut children = vec![];
@@ -382,7 +388,7 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
     let num_populations = 3;
     //lets only clone/migrate every x generations
     let reset_num = 20;
-    let use_double_par = true;
+    let use_double_par = false;
     let mut populations: Vec<& mut [Individual]>  = population.chunks_mut((pop_size / nthreads).try_into().unwrap() ).collect();
     for cur_generation in 1..num_generations/num_populations{
         // Make our new populations
@@ -415,9 +421,7 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
         //CLONE IS EXPENSIVE?
 
         if cur_generation % reset_num == 0{
-            //population = all_scores.iter().flat_map(|p| (**p).clone()).collect();
             selection_algo(&mut population);
-            //population.truncate(pop_size.try_into().unwrap());
             populations = population.chunks_mut((pop_size / nthreads).try_into().unwrap()).collect();
         }
     }
