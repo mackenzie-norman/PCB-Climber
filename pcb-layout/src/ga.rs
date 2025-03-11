@@ -10,6 +10,7 @@ use std::collections::BTreeMap;
 use std::time::Instant;
 
 use std::thread;
+use rayon::prelude::*;
 
 
 fn random_rotation(rng: &mut ThreadRng) -> i32 {
@@ -34,6 +35,7 @@ fn draw_nets( pins_by_net : BTreeMap<i32, Vec<(f64,f64)>>)  -> Vec<PathElement<(
 }
 /* 
  */
+#[derive(Clone, Debug)]
 pub struct Individual {
     comp_list: Vec<Component>,
     pl_area: Bbox,
@@ -374,34 +376,48 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
         println!("Original Score: {}", id.score());
     }
 
-    let now = Instant::now();
+    let now = Instant::now();/*
     for _ in 0..num_generations {
-    thread::scope(|scope| {
-        for ind_vec in population.chunks_mut((pop_size/nthreads).try_into().unwrap()){
-            scope.spawn( || {
-                for ind in ind_vec {
-                    if ind.mutate(){
-                        ind.score();
-                    }
+        population.par_iter_mut().for_each(|ind| {
+                if ind.mutate(){
+                    ind.score();
                 }
-            });
+        });
 
-        }
-    });
         //elitist_selection(&mut population);
         selection_algo(&mut population);
         scores.push(population[0].fitness);
+    }*/
+    // Clone the original population into n separate populations
+    let num_populations = 3;
+    for _ in 0..num_generations/num_populations{
+
+    let mut populations: Vec<Vec<Individual>>  = (0..num_populations).map(|_|  population.clone()).collect();
+
+    // Apply evolution in parallel to all populations
+    let mut all_scores: Vec<_> = populations
+        .par_iter_mut()
+        .map(|population| {
+            population.par_iter_mut().for_each(|ind| {
+                    if ind.mutate(){
+                        ind.score();
+                    }
+            });
+
+            selection_algo(population);
+            population 
+        }).collect();
+
+    population = all_scores.iter().flat_map(|p| (**p).clone()).collect();
+    selection_algo(&mut population);
+    population.truncate(pop_size.try_into().unwrap());
     }
-    /*
-     */
+    println!("{} {}", population.len(), pop_size);
     let id = &mut population[0];
     if output {
         println!("New Score: {}", id.score());
 
-        id.plot(
-            &format!("test-{}x{}.png", pop_size, num_generations),
-            &pl.net_map,
-        );
+        
         let elapsed_time = now.elapsed();
         println!(
             "\nTest took {}.{} seconds.",
@@ -409,6 +425,10 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
             elapsed_time.subsec_millis()
         );
         println!("\n{}", "+++++++Test Over+++++++".to_string().green());
+        id.plot(
+            &format!("test-{}x{}.png", pop_size, num_generations),
+            &pl.net_map,
+        );
     }
 
     scores

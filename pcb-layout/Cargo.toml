@@ -10,3 +10,4 @@ rand = "0.9"
 colored = "2"
 plotters = "0.3.3"
 clap = { version = "4.5.31", features = ["derive"] }
+rayon="1.0"
