@@ -82,6 +82,10 @@ selection algo
 
 ```
 
+I implemented this but I think something is broken - getting WAY more overlaps when I used to have 0
+
+Need to look at my selection/crossover. I am certain its in crossover
+
 
 
 

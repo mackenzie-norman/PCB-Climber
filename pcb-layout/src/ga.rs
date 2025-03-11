@@ -376,51 +376,49 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
         println!("Original Score: {}", id.score());
     }
 
-    let now = Instant::now();/*
-    for _ in 0..num_generations {
-        population.par_iter_mut().for_each(|ind| {
-                if ind.mutate(){
-                    ind.score();
-                }
-        });
+    let now = Instant::now();
 
-        //elitist_selection(&mut population);
-        selection_algo(&mut population);
-        scores.push(population[0].fitness);
-    }*/
     // Clone the original population into n separate populations
     let num_populations = 3;
     //lets only clone/migrate every x generations
-    let reset_num = 4;
-    let mut populations: Vec<Vec<Individual>>  = (0..num_populations).map(|_|  population.clone()).collect();
+    let reset_num = 20;
+    let use_double_par = false;
+    let mut populations: Vec<& mut [Individual]>  = population.chunks_mut((pop_size / nthreads).try_into().unwrap() ).collect();
     for cur_generation in 1..num_generations/num_populations{
         // Make our new populations
 
         if cur_generation % reset_num == 1{
-            populations  = (0..num_populations).map(|_|  population.clone()).collect();
+            //populations  = (0..num_populations).map(|_|  population.clone()).collect();
 
         }
 
         // Apply evolution in parallel to all populations
         //NOTE: THIS STARTED AS CHAT GPT CODE. IT DOESN'T REALLY RESEMBLE IT ANY MORE
-        let mut all_scores: Vec<_> = populations
-            .par_iter_mut()
-            .map(|population| {
-                population.par_iter_mut().for_each(|ind| {
-                        if ind.mutate(){
-                            ind.score();
-                        }
+        populations.par_iter_mut().for_each( |pop| {
+            if use_double_par{
+            pop.par_iter_mut().for_each(|ind| {
+                if ind.mutate(){
+                    ind.score();
+                    }
                 });
 
-                selection_algo(population);
-                population 
-            }).collect();
+            }else{
+                for ind in pop.into_iter(){
+                    if ind.mutate(){
+                        ind.score();
+                    }
+                }
+            }
+
+                selection_algo(& mut pop.to_vec());
+            });
         //CLONE IS EXPENSIVE?
 
         if cur_generation % reset_num == 0{
-            population = all_scores.iter().flat_map(|p| (**p).clone()).collect();
+            //population = all_scores.iter().flat_map(|p| (**p).clone()).collect();
             selection_algo(&mut population);
-            population.truncate(pop_size.try_into().unwrap());
+            //population.truncate(pop_size.try_into().unwrap());
+            populations = population.chunks_mut((pop_size / nthreads).try_into().unwrap()).collect();
         }
     }
     println!("{} {}", population.len(), pop_size);
