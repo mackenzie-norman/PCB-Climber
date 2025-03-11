@@ -86,6 +86,9 @@ I implemented this but I think something is broken - getting WAY more overlaps w
 
 Need to look at my selection/crossover. I am certain its in crossover
 
+## Final Parallel Notes
+so double parallel is slower, not sure why that is. 
+
 
 
 
