@@ -390,27 +390,38 @@ pub fn genetic_algorithim(pl: Placement, pop_size: u32, num_generations: u32, ou
     }*/
     // Clone the original population into n separate populations
     let num_populations = 3;
-    for _ in 0..num_generations/num_populations{
-
+    //lets only clone/migrate every x generations
+    let reset_num = 4;
     let mut populations: Vec<Vec<Individual>>  = (0..num_populations).map(|_|  population.clone()).collect();
+    for cur_generation in 1..num_generations/num_populations{
+        // Make our new populations
 
-    // Apply evolution in parallel to all populations
-    let mut all_scores: Vec<_> = populations
-        .par_iter_mut()
-        .map(|population| {
-            population.par_iter_mut().for_each(|ind| {
-                    if ind.mutate(){
-                        ind.score();
-                    }
-            });
+        if cur_generation % reset_num == 1{
+            populations  = (0..num_populations).map(|_|  population.clone()).collect();
 
-            selection_algo(population);
-            population 
-        }).collect();
+        }
 
-    population = all_scores.iter().flat_map(|p| (**p).clone()).collect();
-    selection_algo(&mut population);
-    population.truncate(pop_size.try_into().unwrap());
+        // Apply evolution in parallel to all populations
+        //NOTE: THIS STARTED AS CHAT GPT CODE. IT DOESN'T REALLY RESEMBLE IT ANY MORE
+        let mut all_scores: Vec<_> = populations
+            .par_iter_mut()
+            .map(|population| {
+                population.par_iter_mut().for_each(|ind| {
+                        if ind.mutate(){
+                            ind.score();
+                        }
+                });
+
+                selection_algo(population);
+                population 
+            }).collect();
+        //CLONE IS EXPENSIVE?
+
+        if cur_generation % reset_num == 0{
+            population = all_scores.iter().flat_map(|p| (**p).clone()).collect();
+            selection_algo(&mut population);
+            population.truncate(pop_size.try_into().unwrap());
+        }
     }
     println!("{} {}", population.len(), pop_size);
     let id = &mut population[0];

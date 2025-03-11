@@ -63,6 +63,24 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 ## Parallel Notes
 - initially implemented parallel mutations, but almost no speed up - even when we have a large population size
 - Most likely want to switch to parallel implementation with different "communities" and reusing our selection operator for a migration operator
+- switched to using communities/migrations
+- since we have to clone ( I know I am doing this wrong but too lazy to fix atm)
+- only merge communities every 4
+
+went from 15.8 to 8.1 
+
+### New Plan
+```pseudo code
+pop[Pop_size * threads]
+par iter into chunkmut
+do work
+selection algos
+
+combine
+selection algo
+
+
+```
 
 
 
