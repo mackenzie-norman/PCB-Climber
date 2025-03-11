@@ -1,4 +1,3 @@
-
 use plotters::prelude::LogScalable;
 use plotters::prelude::*;
 use std::collections::BTreeMap;
@@ -41,7 +40,7 @@ impl Bbox {
         let br: (f64, f64) = (self.x2, self.y1);
         Rectangle::new([ul, br], ShapeStyle::from(color.filled()))
     }
-    
+
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
     }
@@ -109,7 +108,6 @@ impl Bbox {
         self.y2 += y;
         self.recenter();
     }
-    
 }
 #[derive(Debug, Clone)]
 pub struct Placement {
@@ -120,13 +118,11 @@ pub struct Placement {
 #[derive(Debug, Clone)]
 #[allow(dead_code)]
 pub struct Pin {
-    
     pub refdes: String,
     pub net: i32,
     pub bbox: Bbox,
 }
 impl Pin {
-    
     pub fn move_pin(&mut self, x: f64, y: f64) {
         self.bbox.x1 += x;
         self.bbox.y1 += y;
@@ -134,7 +130,6 @@ impl Pin {
         self.bbox.y2 += y;
         self.bbox.recenter();
     }
-    
 }
 #[derive(Debug, Clone)]
 pub struct Component {
@@ -144,7 +139,6 @@ pub struct Component {
     pub pins: Vec<Pin>,
 }
 impl Component {
-    
     pub fn move_comp(&mut self, x: f64, y: f64) {
         self.bbox.x1 += x;
         self.bbox.y1 += y;
@@ -166,7 +160,7 @@ impl Component {
         self.bbox.rotate(delta.as_f64());
         self.bbox.recenter();
     }
-    
+
     pub fn move_to(&mut self, x: f64, y: f64) {
         self.bbox.recenter();
         let delta_x = x - self.bbox.x1;
