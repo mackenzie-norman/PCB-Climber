@@ -16,6 +16,7 @@ Okay I think were ready to implement this for real ish
 - ~~Scoring?~~ 
 - Actual algo still (the fun part with a GA is this is pretty easy)
 
+
 running into a problem of how to only allow valid moves, need to make sure a move
 - doesnt overlap
 - doesnt wrap around
@@ -26,7 +27,7 @@ running into a problem of how to only allow valid moves, need to make sure a mov
 - Now something is causing the components to escape placement bounds 
 
 
-# Latest Update. 
+# Latest Update (2-26-2025). 
 I've spent the last week or so dealing with parsing modern kicad. I really, really, wish the kicad parse crate worked but it doesn't. 
 I am well aware there are better ways to do this but I just want to make something that works well enough so I can run my algo on a real pcb
 
@@ -52,7 +53,7 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 - add from scratch fn
 - ~~CLI~~
 
-## Notes again. 
+## Notes again (2-28-2025). 
 - We calc score on every one on the sort. That is definetly inefficent to some degree. 
 - added rough CLI using clap
 ## Fixes
@@ -60,16 +61,18 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 - added rough ev selector, think I want to add my weighting function to the elitist plan too
 - add net plot, need to change it to ordered by distance sort of, just so its actually visible. I also need to figure out whats going on with my pins. They are there but aren't getting plotted.
 
-## Parallel Notes
+## Parallel Notes (3-6-2025)
 - initially implemented parallel mutations, but almost no speed up - even when we have a large population size
 - Most likely want to switch to parallel implementation with different "communities" and reusing our selection operator for a migration operator
+
+## Parallel Notes (3-10-2025)
 - switched to using communities/migrations
 - since we have to clone ( I know I am doing this wrong but too lazy to fix atm)
 - only merge communities every 4
 
 went from 15.8 to 8.1 
 
-### New Plan
+### New Plan 
 ```pseudo code
 pop[Pop_size * threads]
 par iter into chunkmut
@@ -86,11 +89,30 @@ I implemented this but I think something is broken - getting WAY more overlaps w
 
 Need to look at my selection/crossover. I am certain its in crossover
 
-## Final Parallel Notes
+## Final Parallel Notes(3-11-2025)
 so double parallel is slower, not sure why that is. 
 
 Changing from ev to elitist selection makes a huge difference (not sure why)
 
+
+# Project Status (3-11-2025)
+Looking back at my goals, I 
+## Minimum
+- ~~Implement GA using operations from [GA_breakdown.pdf](GA_breakdown.pdf)~~
+## Should
+-  ~~Add concurrent/multi-threaded support~~
+-  ~~Ability to parse Kicad input~~ *and output to Kicad* (Not sure if I'll get to output, but I feel okay with my plotting)
+## Stretch
+-  Utilizing mutations created above, implement PSA/MOSA 
+-  Add concurrent/multi-threaded support to our SA 
+## Reach
+-  improve upon operators and try other simulated annealing based approaches
+-  implement a better wire length calculation (maybe A*?)
+
+
+I think if I had to submit this now I would feel *fine* about my progress. 
+
+I think I'd like to add a really basic SA to play with, although sadly I don't know if Ill have time to get PSA/MOSA but I really would and probably will after the term ends.
 
 
 
