@@ -50,11 +50,11 @@ It should also be noted we are SURELY being helped by starting from a "placed" b
 
 # TODOs
 - ~~change selection criteria~~
-- Parallel
-- SPEED UP
+- ~~Parallel~~
+- ~~SPEED UP~~
 - ~~actually plot nets~~
 - shape traits for placment, comp, pin , bbox
-- add from scratch fn
+- ~~add from scratch fn~~
 - ~~CLI~~
 
 ## Notes again (2-28-2025). 
@@ -117,6 +117,8 @@ Looking back at my goals, I
 I think if I had to submit this now I would feel *fine* about my progress. 
 
 I think I'd like to add a really basic SA to play with, although sadly I don't know if Ill have time to get PSA/MOSA but I really would and probably will after the term ends.
+
+I also really want to play with traits but there is not much benefit for the refactoring required
 
 
 
