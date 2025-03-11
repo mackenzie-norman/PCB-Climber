@@ -325,21 +325,19 @@ pub fn ev_selection( population : & mut Vec<Individual>){
         population.push(child_b);
          
     }
-        //population.sort_by(|a: &Individual, b: &Individual| {
-            //let a_s = a.fitness;
-            //let b_s = b.fitness;
-
-            //a_s.partial_cmp(&b_s).unwrap()
-        //});
-        population.reverse();
-        population.truncate(pop_size as usize);
+    population.reverse();
+    population.truncate(pop_size as usize);
 
 }
 pub fn elitist_selection( population : & mut Vec<Individual>){
+    let weights: Vec<f64> = population.iter().map(|i| 1.0/i.fitness).collect();
+    let dist = WeightedIndex::new(&weights).unwrap();
     let pop_size = population.len();
-    for i in (0..pop_size).step_by(2) {
-        let parent_a: &Individual = &population[i as usize];
-        let parent_b: &Individual = &population[(i + 1) as usize];
+    let mut rng = rand::rng();
+
+    for _ in (0..pop_size).step_by(2) {
+        let parent_a: &Individual = &population[dist.sample(&mut rng)];
+        let parent_b: &Individual = &population[dist.sample(&mut rng)];
         let child_a: Individual = parent_a.crossover(parent_b);
         let child_b: Individual = parent_b.crossover(parent_a);
             

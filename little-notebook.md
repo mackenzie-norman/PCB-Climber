@@ -89,6 +89,8 @@ Need to look at my selection/crossover. I am certain its in crossover
 ## Final Parallel Notes
 so double parallel is slower, not sure why that is. 
 
+Changing from ev to elitist selection makes a huge difference (not sure why)
+
 
 
 
