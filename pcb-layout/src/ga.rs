@@ -9,7 +9,6 @@ use std::collections::BTreeMap;
 use std::time::Instant;
 
 use rayon::prelude::*;
-use std::thread;
 
 fn random_rotation(rng: &mut ThreadRng) -> i32 {
     // Get an RNG:
@@ -106,7 +105,7 @@ impl Individual {
         /*
          */
     }
-
+    /// Moves a comp, returns whether or not it could move it
     fn move_comp(&mut self, a: usize, x: f64, y: f64) -> bool {
         let a_comp = &mut (self.comp_list[a - 1]);
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
@@ -133,6 +132,8 @@ impl Individual {
             //println!("{}", "GOOD".green());
         }
     }
+    ///Swaps a comp returns if it was successful
+    /// 
     fn swap(&mut self, a: usize, b: usize, rng: & mut ThreadRng) -> bool {
         //We need to zero, so lets grab the coords and also hold on to them
         let a_comp = &(self.comp_list[a - 1]);
@@ -157,6 +158,7 @@ impl Individual {
         }
         true
     }
+    /// Moves to a new (random) position
     fn move_to_new(&mut self, a: usize, rng: &mut ThreadRng) -> bool {
         //let mut rng = rand::rng();
         //let qk_comp = self.comp_list[a - 1].bbox;
@@ -171,13 +173,14 @@ impl Individual {
         }
         mved
     }
-
+    /// Our simple scoring function
+    /// Is a sum of placement area + hpwl + and no overlaps
     fn score(&mut self) -> f64 {
         self.fitness =
-            is_valid(&self.comp_list) * placement_area(&self.comp_list) * hpwl(&self.comp_list);
+            is_valid(&self.comp_list) + placement_area(&self.comp_list) + hpwl(&self.comp_list);
         self.fitness
     }
-
+    /// Rotates a component ```a``` x degrees
     fn rotate(&mut self, a: usize, rotation: i32) -> bool {
         let a_comp = &mut (self.comp_list[a - 1]);
 
@@ -204,6 +207,7 @@ impl Individual {
             //println!("{}", "GOOD".green());
         }
     }
+    /// Given a string, returns the index of that refdes or 0 if it cannot be found
     fn refdes_to_indx(&self, rfdes: String) -> usize {
         let mut i: usize = 1;
         for comp in &self.comp_list {
@@ -214,6 +218,8 @@ impl Individual {
         }
         0
     }
+    ///Our crossover function 
+    /// partions an area to inherit from self and then tries to take the remaining components from other
     fn crossover(&self, other: &Individual, rng: &mut ThreadRng) -> Individual {
         //assert!() // add assertion to ensure they are same size
         //let mut rng = rand::rng();
@@ -246,7 +252,7 @@ impl Individual {
 
         for comp in non_selected_comps {
             let comp_idx = child.refdes_to_indx(comp.refdes.clone());
-            let mut could_move = child.move_comp(comp_idx, comp.bbox.x1, comp.bbox.y1);
+            let could_move = child.move_comp(comp_idx, comp.bbox.x1, comp.bbox.y1);
             if !could_move {
                 //could_move = 
                 child.move_to_new(comp_idx, rng);
@@ -255,7 +261,7 @@ impl Individual {
         child.score();
         child
     }
-
+    /// Total mutation function
     fn mutate(&mut self, rng: & mut ThreadRng) -> bool {
         //let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
@@ -304,7 +310,8 @@ pub fn generate_animation(pl: Placement) -> Vec<String> {
     file_names
 }
 /// Simple selector using  monte-carlo
-///
+/// Note: we select and crossover in the same function because we are lazy
+/// 
 pub fn ev_selection(population: &mut Vec<Individual>) {
     let weights: Vec<f64> = population.iter().map(|i| 1.0 / i.fitness).collect();
     let dist = WeightedIndex::new(&weights).unwrap();
@@ -323,6 +330,9 @@ pub fn ev_selection(population: &mut Vec<Individual>) {
     population.reverse();
     population.truncate(pop_size as usize);
 }
+/// Simple Selector using an "elitist selection" as described by the paper
+/// Note: we select and crossover in the same function because we are lazy 
+/// 
 pub fn elitist_selection(population: &mut Vec<Individual>) {
     let weights: Vec<f64> = population.iter().map(|i| 1.0 / i.fitness).collect();
     let dist = WeightedIndex::new(&weights).unwrap();
@@ -361,7 +371,7 @@ pub fn genetic_algorithim(
 ) -> Vec<f64> {
     let mut population: Vec<Individual> = Vec::new();
     //let mut children = vec![];
-    let mut scores: Vec<f64> = Vec::new();
+    let scores: Vec<f64> = Vec::new();
     for _ in 0..pop_size {
         let pl_2 = pl.clone();
         let id2 = Individual::new(pl_2);
@@ -402,13 +412,13 @@ pub fn genetic_algorithim(
         populations.par_iter_mut().for_each(|pop| {
             let mut rng =  rand::rng();
             if use_double_par {
-                /* 
+                // This cant make this better
                 pop.par_iter_mut().for_each(|ind| {
+                    let mut rng =  rand::rng();
                     if ind.mutate(&mut rng) {
                         ind.score();
                     }
                 });
-                */
                 ();
             } else {
                 for ind in pop.into_iter() {
