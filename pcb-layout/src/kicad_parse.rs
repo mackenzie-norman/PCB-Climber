@@ -129,22 +129,16 @@ pub fn parse_file(file_path: &str) -> Placement {
                 if line.contains(footprint_layer) {
                     //parse and add start and end
                     let opt = parse_kicad_line_to_floats(start);
-                    match opt {
-                        Some(tple) => {
-                            let (x, y) = tple;
-                            xs.push(x + x1);
-                            ys.push(y + y1);
-                        }
-                        None => (),
+                    if let Some(tple) = opt {
+                        let (x, y) = tple;
+                        xs.push(x + x1);
+                        ys.push(y + y1);
                     }
                     let opt = parse_kicad_line_to_floats(end);
-                    match opt {
-                        Some(tple) => {
-                            let (x, y) = tple;
-                            xs.push(x + x1);
-                            ys.push(y + y1);
-                        }
-                        None => (),
+                    if let Some(tple) = opt {
+                        let (x, y) = tple;
+                        xs.push(x + x1);
+                        ys.push(y + y1);
                     }
                 }
             }
@@ -238,22 +232,16 @@ pub fn parse_file(file_path: &str) -> Placement {
             }
             if line.contains(pcb_layer) {
                 let opt = parse_kicad_line_to_floats(start);
-                match opt {
-                    Some(tple) => {
-                        let (x, y) = tple;
-                        xs.push(x);
-                        ys.push(y);
-                    }
-                    None => (),
+                if let Some(tple) = opt {
+                    let (x, y) = tple;
+                    xs.push(x);
+                    ys.push(y);
                 }
                 let opt = parse_kicad_line_to_floats(end);
-                match opt {
-                    Some(tple) => {
-                        let (x, y) = tple;
-                        xs.push(x);
-                        ys.push(y);
-                    }
-                    None => (),
+                if let Some(tple) = opt {
+                    let (x, y) = tple;
+                    xs.push(x);
+                    ys.push(y);
                 }
             }
         }
@@ -269,7 +257,7 @@ pub fn parse_file(file_path: &str) -> Placement {
     Placement {
         components: comp_vec,
         placement_area: pl_area,
-        net_map: net_map,
+        net_map,
     }
     //println!("{:?}", net_map);
 }

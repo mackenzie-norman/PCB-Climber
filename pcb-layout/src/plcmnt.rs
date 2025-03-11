@@ -39,11 +39,10 @@ impl Bbox {
     pub fn plot(&self, color: &RGBColor) -> Rectangle<(f64, f64)> {
         let ul: (f64, f64) = (self.x1, self.y2);
         let br: (f64, f64) = (self.x2, self.y1);
-        Rectangle::new([ul, br], ShapeStyle::from(color.filled()))
+        Rectangle::new([ul, br], color.filled())
     }
     ///Checks to see if this is outside of another bbox
     pub fn is_out_of_bounds(&self, outer: &Bbox) -> bool {
-        
         self.x1 < outer.x1 || self.x2 > outer.x2 || self.y1 < outer.y1 || self.y2 > outer.y2
     }
     ///Checks to see if this overlaps with another bbox
@@ -52,12 +51,12 @@ impl Bbox {
             !(self.x2 < other.x1 || other.x2 < self.x1 || self.y2 < other.y1 || other.y2 < self.y1);
         no_overlap || (self.centerx == other.centerx && self.centery == other.centery)
     }
-    ///
+
     pub fn get_center(&self) -> (f64, f64) {
         //self.bbox.recenter();
         (self.centerx, self.centery)
     }
-    /// Rotates  ```angle degrees``` around the center 
+    /// Rotates  ```angle degrees``` around the center
     ///
     pub fn rotate(&mut self, angle_degrees: f64) {
         self.recenter();
@@ -107,7 +106,7 @@ impl Bbox {
         self.recenter();
     }
     /// Moves a bbox the x,y provided
-    /// 
+    ///
     /// Also recenters
     pub fn move_bbx(&mut self, x: f64, y: f64) {
         self.x1 += x;

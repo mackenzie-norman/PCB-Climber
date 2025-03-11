@@ -90,12 +90,12 @@ fn gen_synth_pl() -> Placement {
     net_map.insert(0, "GND".to_string());
     net_map.insert(1, "5V+".to_string());
     net_map.insert(2, "5V+".to_string());
-    let pl = Placement {
+
+    Placement {
         components: comps,
         placement_area,
         net_map,
-    };
-    pl
+    }
 }
 
 ///# Runs our simple test suite
@@ -173,18 +173,16 @@ fn main() {
     }
     if test {
         tester(pl2);
+    } else if !anim {
+        let _scores = genetic_algorithim(
+            pl2,
+            args.population_size,
+            args.generations,
+            true,
+            selection_algo,
+            args.threads,
+        );
     } else {
-        if !anim {
-            let _scores = genetic_algorithim(
-                pl2,
-                args.population_size,
-                args.generations,
-                true,
-                selection_algo,
-                args.threads,
-            );
-        } else {
-            let _ = generate_animation(pl2);
-        }
+        let _ = generate_animation(pl2);
     }
 }
