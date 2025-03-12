@@ -1,4 +1,3 @@
-
 use std::collections::BTreeMap;
 mod plcmnt;
 use plcmnt::{Bbox, Component, Pin, Placement};
@@ -8,7 +7,7 @@ use kicad_parse::parse_file;
 mod ga;
 use ga::{elitist_selection, ev_selection, generate_animation, genetic_algorithim, Individual};
 mod sa;
-use sa::{linear_cool,log_cool, quick_sa};
+use sa::{linear_cool, log_cool, quick_sa};
 /// # Generates a really simple placement
 ///
 ///
@@ -190,7 +189,14 @@ fn main() {
     }
     let clone_sa = SA_pl.clone();
     let id2 = Individual::new(SA_pl);
-    let mut id3 = quick_sa(id2, log_cool, (args.generations * args.population_size).try_into().unwrap(), true);
-    
+    let id3 = quick_sa(
+        id2,
+        log_cool,
+        (args.generations * args.population_size)
+            .try_into()
+            .unwrap(),
+        true,
+    );
+
     id3.plot("test-sa.png", &clone_sa.net_map);
 }

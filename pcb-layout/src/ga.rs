@@ -130,8 +130,8 @@ impl Individual {
         }
     }
     ///Swaps a comp returns if it was successful
-    /// 
-    fn swap(&mut self, a: usize, b: usize, _rng: & mut ThreadRng) -> bool {
+    ///
+    fn swap(&mut self, a: usize, b: usize, _rng: &mut ThreadRng) -> bool {
         //We need to zero, so lets grab the coords and also hold on to them
         let a_comp = &(self.comp_list[a - 1]);
         let old_a_loc = (a_comp.bbox.x1, a_comp.bbox.y1);
@@ -215,7 +215,7 @@ impl Individual {
         }
         0
     }
-    ///Our crossover function 
+    ///Our crossover function
     /// partions an area to inherit from self and then tries to take the remaining components from other
     fn crossover(&self, other: &Individual, rng: &mut ThreadRng) -> Individual {
         //assert!() // add assertion to ensure they are same size
@@ -251,7 +251,7 @@ impl Individual {
             let comp_idx = child.refdes_to_indx(comp.refdes.clone());
             let could_move = child.move_comp(comp_idx, comp.bbox.x1, comp.bbox.y1);
             if !could_move {
-                //could_move = 
+                //could_move =
                 child.move_to_new(comp_idx, rng);
             }
         }
@@ -259,7 +259,7 @@ impl Individual {
         child
     }
     /// Total mutation function
-    pub fn mutate(&mut self, rng: & mut ThreadRng) -> bool {
+    pub fn mutate(&mut self, rng: &mut ThreadRng) -> bool {
         //let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
         let c = rng.random_range(1..4);
@@ -267,20 +267,20 @@ impl Individual {
         match c {
             1 => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);
-                self.swap(a, b,  rng)
+                self.swap(a, b, rng)
             }
-            2 => self.move_to_new(a,  rng),
+            2 => self.move_to_new(a, rng),
             3 => self.rotate(a, random_rotation(rng)),
             _ => false,
         }
     }
 }
-/// Little helper fn for generating a 100 images 
-/// 
-/// 
+/// Little helper fn for generating a 100 images
+///
+///
 /// I wanted to use the image crate to turn them into a gif but for right now I am just using gimp
 pub fn generate_animation(pl: Placement) -> Vec<String> {
-    let mut rng =  rand::rng();
+    let mut rng = rand::rng();
     let mut population: Vec<Individual> = Vec::new();
     let mut scores: Vec<f64> = Vec::new();
     let frame_count = 100;
@@ -308,7 +308,7 @@ pub fn generate_animation(pl: Placement) -> Vec<String> {
 }
 /// Simple selector using  monte-carlo
 /// Note: we select and crossover in the same function because we are lazy
-/// 
+///
 pub fn ev_selection(population: &mut Vec<Individual>) {
     let weights: Vec<f64> = population.iter().map(|i| 1.0 / i.fitness).collect();
     let dist = WeightedIndex::new(&weights).unwrap();
@@ -328,8 +328,8 @@ pub fn ev_selection(population: &mut Vec<Individual>) {
     population.truncate(pop_size);
 }
 /// Simple Selector using an "elitist selection" as described by the paper
-/// Note: we select and crossover in the same function because we are lazy 
-/// 
+/// Note: we select and crossover in the same function because we are lazy
+///
 pub fn elitist_selection(population: &mut Vec<Individual>) {
     let weights: Vec<f64> = population.iter().map(|i| 1.0 / i.fitness).collect();
     let dist = WeightedIndex::new(&weights).unwrap();
@@ -407,16 +407,15 @@ pub fn genetic_algorithim(
         // Apply evolution in parallel to all populations
         //NOTE: THIS STARTED AS CHAT GPT CODE. IT DOESN'T REALLY RESEMBLE IT ANY MORE
         populations.par_iter_mut().for_each(|pop| {
-            let mut rng =  rand::rng();
+            let mut rng = rand::rng();
             if use_double_par {
                 // This cant make this better
                 pop.par_iter_mut().for_each(|ind| {
-                    let mut rng =  rand::rng();
+                    let mut rng = rand::rng();
                     if ind.mutate(&mut rng) {
                         ind.score();
                     }
                 });
-                
             } else {
                 for ind in pop.iter_mut() {
                     if ind.mutate(&mut rng) {
