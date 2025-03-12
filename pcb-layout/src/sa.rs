@@ -1,8 +1,7 @@
 use crate::ga;
-use crate::plcmnt;
+//use crate::plcmnt;
 use colored::Colorize;
-use ga::{elitist_selection, ev_selection, generate_animation, genetic_algorithim, Individual};
-use plcmnt::{Bbox, Component, Pin, Placement};
+use ga::Individual;
 use rand::prelude::*;
 use std::time::Instant;
 
@@ -10,6 +9,7 @@ pub fn log_cool(start_temp: f64, iter: i32) -> f64 {
     //C / log(1 + i)
     start_temp / ((1.0 + iter as f64).log2())
 }
+#[allow(dead_code)]
 pub fn linear_cool(start_temp: f64, iter: i32) -> f64 {
     start_temp - iter as f64 * 0.001
 }

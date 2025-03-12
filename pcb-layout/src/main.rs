@@ -7,7 +7,7 @@ use kicad_parse::parse_file;
 mod ga;
 use ga::{elitist_selection, ev_selection, generate_animation, genetic_algorithim, Individual};
 mod sa;
-use sa::{linear_cool, log_cool, quick_sa};
+use sa::{log_cool, quick_sa};
 /// # Generates a really simple placement
 ///
 ///
@@ -165,7 +165,7 @@ fn main() {
     }
     pl2.shift_placement(0.0, 0.0);
     //for SA
-    let mut SA_pl = pl2.clone();
+    let sa_pl = pl2.clone();
     let test = args.test;
     let anim = args.animate;
     let sel_type = args.selection;
@@ -187,8 +187,8 @@ fn main() {
     } else {
         let _ = generate_animation(pl2);
     }
-    let clone_sa = SA_pl.clone();
-    let id2 = Individual::new(SA_pl);
+    let clone_sa = sa_pl.clone();
+    let id2 = Individual::new(sa_pl);
     let id3 = quick_sa(
         id2,
         log_cool,
