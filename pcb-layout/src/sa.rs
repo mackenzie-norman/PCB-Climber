@@ -19,20 +19,26 @@ pub fn quick_sa(mut ind: Individual, cooling_schedule : fn(f64) -> f64) -> Indiv
 
     let mut old_fit = ind.score();
     //Go to stop
+    let mut count = 0;
     while temp > 10.0{
         let mut new_ind = ind.clone();
         if new_ind.mutate(&mut rng)
         {
             //Compare fitness
-            let fitness_diff = old_fit/new_ind.score();
-            let acceptance_odds = fitness_diff * (start_temp/temp);
+            let new_fit = new_ind.score();
+            let fitness_diff = old_fit/new_fit;
+            let acceptance_odds = fitness_diff * (temp/start_temp);
+            //println!("Iter {}: temp: {}, old_fitness: {}, new fitness: {}, fitness_diff: {}, odds:{}", count, temp, old_fit , new_fit, fitness_diff, acceptance_odds);
             if acceptance_odds > rng.random_range(0.0..=1.0){
                 ind = new_ind;
+                old_fit = new_fit;
+
             }
 
 
         }
         temp = cooling_schedule(temp);
+        count +=1;
 
    }
     ind 
