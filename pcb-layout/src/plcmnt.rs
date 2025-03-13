@@ -28,11 +28,11 @@ impl Bbox {
         self.centerx = self.x1 + ((self.x1 - self.x2).abs() / 2.0);
         self.centery = self.y1 + ((self.y1 - self.y2).abs() / 2.0);
     }
-
-    pub fn get_width_fl(&self) -> f64 {
+    
+    pub fn get_width(&self) -> f64 {
         (self.x1 - self.x2).abs()
     }
-    pub fn get_height_fl(&self) -> f64 {
+    pub fn get_height(&self) -> f64 {
         (self.y1 - self.y2).abs()
     }
     ///Helper function for plotting
@@ -229,7 +229,7 @@ pub fn hpwl(comps: &Vec<Component>) -> f64 {
             };
         }
         let net_bbox = Bbox::new(min_x, max_x, min_y, max_y);
-        total_wl += net_bbox.get_height_fl() + net_bbox.get_width_fl();
+        total_wl += net_bbox.get_height() + net_bbox.get_width();
     }
     total_wl
 }

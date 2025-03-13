@@ -53,8 +53,8 @@ impl Individual {
         let padding = 10.0;
         let scale = 10.0;
 
-        let pl_width = scale * (self.pl_area.get_width_fl() + padding * 2.0);
-        let pl_height = scale * (self.pl_area.get_height_fl() + padding * 2.0);
+        let pl_width = scale * (self.pl_area.get_width() + padding * 2.0);
+        let pl_height = scale * (self.pl_area.get_height() + padding * 2.0);
         //let style = TextStyle::from(("sans-serif", scale).into_font()).color(&RED);
         let mut pins_by_net: BTreeMap<i32, Vec<(f64, f64)>> = BTreeMap::new();
         for k in net_map.keys() {
@@ -66,8 +66,8 @@ impl Individual {
         )
         .into_drawing_area();
         let backend = backend.apply_coord_spec(Cartesian2d::<RangedCoordf64, RangedCoordf64>::new(
-            0f64..self.pl_area.get_width_fl(),
-            0f64..self.pl_area.get_height_fl(),
+            0f64..self.pl_area.get_width(),
+            0f64..self.pl_area.get_height(),
             (0..pl_width.floor() as i32, 0..pl_height.round() as i32),
         ));
         let _ = backend.fill(&WHITE);
@@ -273,6 +273,14 @@ impl Individual {
             3 => self.rotate(a, random_rotation(rng)),
             _ => false,
         }
+    }
+    pub fn hpwl_score(& mut self) -> f64{
+        hpwl(&self.comp_list)
+    
+    }
+    pub fn area_score(& mut self) -> f64{
+        placement_area(&self.comp_list)
+        
     }
 }
 /// Little helper fn for generating a 100 images

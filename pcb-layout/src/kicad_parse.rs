@@ -20,9 +20,12 @@ fn parse_kicad_line_to_floats(passed_str: &str) -> Option<(f64, f64)> {
 /// # Responsible for parsing a kicad
 /// Takes a filename as an &str
 ///
-///
-///
-///
+/// Right now this is bad and needs to be redone. There is a far easier & more robust solution to this problem but
+/// I just wanted something that worked so I did it the lazy way.
+/// Currently the pcb_layer and footprint layer are hardcoded
+/// This parser cant handle polygons (or anything non rectangular) and will always generate the extents as the min(x,y) max(x,y)
+/// this means that if you change to a layer that also has text shapes for footprint you can get wrong sized comps
+/// 
 ///
 ///
 pub fn parse_file(file_path: &str) -> Placement {
@@ -57,12 +60,8 @@ pub fn parse_file(file_path: &str) -> Placement {
         if !in_doc {
             break;
         };
-        //for line in contents.split("\n"){
-
-        //print!("{}",line);
-        //println!("{}",line);
+        // The first thing we will see is nets
         if line.starts_with("\t(net ") && line.trim_end().ends_with("\")") {
-            //println!("{}",line);
             let words: Vec<&str> = line.split(" ").collect();
             let net_idx = words[1].parse::<i32>().unwrap();
             let net_name = words[2]
@@ -70,9 +69,9 @@ pub fn parse_file(file_path: &str) -> Placement {
                 .strip_suffix(|_: char| true)
                 .unwrap()
                 .replace("\"", "");
-            //println!("{} : {}", net_idx, net_name);
             net_map.insert(net_idx, net_name);
         }
+        // Now we can find our components and their footprints
         if line.starts_with("\t(footprint ") {
             let _ = content_iter.next().unwrap();
             let _ = content_iter.next().unwrap();
@@ -95,10 +94,7 @@ pub fn parse_file(file_path: &str) -> Placement {
                 .replace("\"", "")
                 .trim()
                 .to_string();
-            //println!("new Device: {}", refdes_str.clone());
-            //println!("{}", refdes_str.clone());
             refdes = &refdes_str;
-            //println!("{} at ({},{}) ", refdes_str, x1,y1);
             let mut in_shape: bool = true;
             while in_shape {
                 while !line.contains("fp_") {
@@ -117,6 +113,7 @@ pub fn parse_file(file_path: &str) -> Placement {
                 }
 
                 //now were in a shape
+                
                 let start = content_iter.next().unwrap().trim();
                 let end = content_iter.next().unwrap().trim();
                 while !line.contains("layer") {
@@ -160,17 +157,11 @@ pub fn parse_file(file_path: &str) -> Placement {
                         }
                     }
                     if line.contains("model") || line.starts_with("\t)") {
-                        //println!("Found all {} pins for {}", pin_vec.len(), refdes);
                         break;
                     }
                     if line.contains("pad ") {
                         line = content_iter.next().unwrap();
-                        //println!("{}", line);
                         let (mut px1, mut py1) = parse_kicad_line_to_floats(line).unwrap();
-                        //px1 += comp_bbox.centerx;
-                        //py1 += comp_bbox.centery;
-                        //px1 += comp_bbox.x1;
-                        //py1 += comp_bbox.y1;
                         px1 += x1;
                         py1 += y1;
                         line = content_iter.next().unwrap();
@@ -180,10 +171,7 @@ pub fn parse_file(file_path: &str) -> Placement {
 
                         px2 += px1;
                         py2 += py1;
-                        //let px2 =
-                        //println!("{}, {}", px2, py2);
                         while !line.contains("net") && !line.starts_with("\t\t)") {
-                            //println!("{}", line);
                             line = content_iter.next().unwrap();
                         }
                         let mut net = 0;
@@ -201,7 +189,6 @@ pub fn parse_file(file_path: &str) -> Placement {
                     }
                 } //end outer pin loop( we should have all our pins)
 
-                //println!("{}, {}",, ys[ys.len()-1]);
 
                 let mut comp: Component = Component {
                     refdes: refdes.to_string(),
@@ -213,16 +200,13 @@ pub fn parse_file(file_path: &str) -> Placement {
                     comp.rotate_comp(rotation);
                 }
 
-                //println!("{:?}", comp.pins.len());
                 comp_vec.push(comp);
             }
             xs.clear();
             ys.clear();
 
-            //Bbox::new(xs[0], x2, y1, y2)
-            //in_doc = line.contains("gr_rect");
         }
-
+        //Lastly using all the shapes, lets find the pcb outline
         if line.contains("(gr_") {
             let start = content_iter.next().unwrap().trim();
             let end = content_iter.next().unwrap().trim();
@@ -259,5 +243,4 @@ pub fn parse_file(file_path: &str) -> Placement {
         placement_area: pl_area,
         net_map,
     }
-    //println!("{:?}", net_map);
 }
