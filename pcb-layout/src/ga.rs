@@ -274,11 +274,11 @@ impl Individual {
             _ => false,
         }
     }
-    pub fn hpwl_score(& mut self) -> f64{
+    pub fn hpwl_score(&  self) -> f64{
         hpwl(&self.comp_list)
     
     }
-    pub fn area_score(& mut self) -> f64{
+    pub fn area_score(&  self) -> f64{
         placement_area(&self.comp_list)
         
     }
