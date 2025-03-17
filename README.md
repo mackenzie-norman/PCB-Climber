@@ -41,7 +41,7 @@ https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6269973
 ## How I feel
 I think this project exactly met my expectations. I still wish I could've done more. 
 
-The hard part about stuff like this is juggling between learning and results, and I think as usual I prioritized "results" over learning and kind of wish it would've been different. 10 week terms are hard. A good example is parallelism and the rand. I never really got any speed ups from running things in parallel either with threads or Rayon. I assume part of this is me using clone to heavily since I did not want to deal with references and part of this is my rand function. (also maybe this isnt a great parallel problem). 
+The hard part about stuff like this is juggling between learning and results, and I think as usual I prioritized "results" over learning and kind of wish it would've been different. 10 week terms are hard. A good example is parallelism and the rand functions. I never really got any speed ups from running things in parallel either with threads or Rayon. I assume part of this is me using clone to heavily since I did not want to deal with references and part of this is my rand function. (also maybe this isnt a great parallel problem). 
 
 ## Wins
 - Did implement all my GA functionality
