@@ -275,7 +275,7 @@ impl Individual {
         }
     }
 }
-/// Little helper fn for generating a 100 images
+/// Little helper fn for generating 100 images
 ///
 ///
 /// I wanted to use the image crate to turn them into a gif but for right now I am just using gimp
@@ -393,6 +393,7 @@ pub fn genetic_algorithim(
     let num_populations = 3;
     //lets only clone/migrate every x generations
     let reset_num = 20;
+    //Double par seems like it only add overhead sadly
     let use_double_par = false;
     let mut populations: Vec<&mut [Individual]> = population
         .chunks_mut((pop_size / nthreads).try_into().unwrap())
@@ -427,7 +428,7 @@ pub fn genetic_algorithim(
             selection_algo(&mut pop.to_vec());
         });
         //CLONE IS EXPENSIVE?
-
+        
         if cur_generation % reset_num == 0 {
             selection_algo(&mut population);
             populations = population
@@ -435,7 +436,15 @@ pub fn genetic_algorithim(
                 .collect();
         }
     }
-    println!("{} {}", population.len(), pop_size);
+    //Lets make sure we are in order
+    population.sort_by(|a: &Individual, b: &Individual| {
+        let a_s = a.fitness;
+        let b_s = b.fitness;
+
+        a_s.partial_cmp(&b_s).unwrap()
+    });
+    let scores_for_debug :Vec<f64> = population.iter().map(|i| i.fitness).collect();
+    println!("{:?}",scores_for_debug );
     let id = &mut population[0];
     if output {
         println!("New Score: {}", id.score());

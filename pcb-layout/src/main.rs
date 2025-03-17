@@ -78,14 +78,11 @@ fn gen_synth_pl() -> Placement {
     let mut c5 = c1.clone();
     c5.set_refdes("C5".to_string());
     c1.move_comp(6.0, 6.0);
-    //c2.move_comp(6, 6);
     c4.move_comp(0.0, -6.0);
     c5.move_comp(15.0, 2.0);
     c3.move_comp(6.0, 6.0);
-    //c1.move_comp( 10, 11);
-    //for i in 1..2000{ c1.rotate_comp(90);};
     c3.rotate_comp(180);
-    //c3.rotate_comp(90);
+
     let comps: Vec<Component> = vec![c1, c2, c3, c4, c5];
     let mut net_map: BTreeMap<i32, String> = BTreeMap::new();
     net_map.insert(0, "GND".to_string());
@@ -143,14 +140,14 @@ struct Args {
     ///Run the testing function on our file (will overwrite gen/pop)
     #[arg(short, long, default_value_t = false)]
     test: bool,
-    ///Selection Type (ev or elitist)
+    ///Selection Type (ev or elitist) (these don't matter much)
     #[arg(short, long, default_value_t = false)]
     selection: bool,
     ///Generate an animation
     #[arg(short, long, default_value_t = false)]
     animate: bool,
-    ///Number of threads
-    #[arg(short, long, default_value_t = 1)]
+    ///Number of threads (GA only)
+    #[arg( long, default_value_t = 1)]
     threads: u32,
 }
 fn main() {
