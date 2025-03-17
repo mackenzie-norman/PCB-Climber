@@ -100,13 +100,12 @@ I do plan on keeping up with this project, if nothing else to improve my rust sk
 - Maybe try a marco or some sort of expression parser for dealing with kicad files. (I really wish the kicad parse crate had worked. )
 - output back to the kicad_file
 
+## PCB Sources:
+[https://github.com/sabogalc/KiCad-Arduino-Boards](https://github.com/sabogalc/KiCad-Arduino-Boards)
+## Previous Work/Sources
 
-## Previous Work
-
-https://docs.rs/kicad_parse_gen/latest/kicad_parse_gen/layout/index.html
-https://github.com/racklet/kicad-rs/tree/main
-https://github.com/The-OpenROAD-Project/SA-PCB
-https://dspace.mit.edu/bitstream/handle/1721.1/139247/Crocker-pcrocker-meng-eecs-2021-thesis.pdf?sequence=1&isAllowed=y 
-
-
-https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6269973
+- [https://docs.rs/kicad_parse_gen/latest/kicad_parse_gen/layout/index.html](https://docs.rs/kicad_parse_gen/latest/kicad_parse_gen/layout/index.html)
+- [https://github.com/racklet/kicad-rs/tree/main](https://github.com/racklet/kicad-rs/tree/main)
+- [https://github.com/The-OpenROAD-Project/SA-PCB](https://github.com/The-OpenROAD-Project/SA-PCB)
+- [https://dspace.mit.edu/bitstream/handle/1721.1/139247/Crocker-pcrocker-meng-eecs-2021-thesis.pdf?sequence=1&isAllowed=y ](https://dspace.mit.edu/bitstream/handle/1721.1/139247/Crocker-pcrocker-meng-eecs-2021-thesis.pdf?sequence=1&isAllowed=y)
+- [https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6269973](https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6269973)
