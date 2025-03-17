@@ -7,7 +7,7 @@ Note: since it is paywalled, and to make sure I knew what I was doing. I rewrote
 
 ![GIF of placement](demo.gif)
 
-This project uses a Genetic Algorithim (GA) to generate "good" pcb layouts. It can read in some .kicad_pcb files. It features a CLI using CLAP and is multithreaded using Rayon. It also uses the plotters library to make nice plots of  placements.
+This project uses a Genetic Algorithm (GA) to generate "good" pcb layouts. It can read in some .kicad_pcb files. It features a CLI using CLAP and is multithreaded using Rayon. It also uses the plotters library to make nice plots of  placements.
 
 The GA optimizes for 3 variables which are summed to calculate the fitness. 
 - HPWL: calculated on a per net basis. In the real world, layouts with Via anywhere don't need to worry about routing gnd so I sometimes ignore it.
