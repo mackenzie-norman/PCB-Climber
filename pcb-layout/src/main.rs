@@ -119,15 +119,32 @@ fn tester(pl: Placement) {
         (200, 500 * gen_mult),
         (500, 200 * gen_mult),
     ];
-    for i in test_cases {
+
+    for i in &test_cases {
         genetic_algorithim(pl.clone(), i.0, i.1, true, ev_selection, 1);
     }
+    for i in &test_cases{
+        let clone_sa = pl.clone();
+        let id2 = Individual::new(pl.clone());
+        let id3 = quick_sa(
+            id2,
+            log_cool,
+            (i.1 *100 )
+                .try_into()
+                .unwrap(),
+            true,
+        );
+
+    id3.plot(&format!("test-sa-{}.png", i.1 *100), &clone_sa.net_map);
+    }
+    
 }
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Name of the .kicad_pcb file to use. Use synthetic to generate a fake board
+    /// Name of the .kicad_pcb file to use. Use synthetic to use the generated toy case. 
+    /// This probably will error on some boards. The parser was a bit of an afterthought and desperately needs more time
     #[arg(short, long, default_value_t = ("../arduino_kicad/arduino UNO.kicad_pcb").to_string() )]
     file: String,
 
@@ -137,7 +154,7 @@ struct Args {
     /// How many individuals are in our popuation
     #[arg(short, long, default_value_t = 100)]
     population_size: u32,
-    ///Run the testing function on our file (will overwrite gen/pop)
+    ///Run the testing function on our file (will override gen/pop)- right now this is the only way to see SA results too
     #[arg(short, long, default_value_t = false)]
     test: bool,
     ///Selection Type (ev or elitist) (these don't matter much)
@@ -146,9 +163,10 @@ struct Args {
     ///Generate an animation
     #[arg(short, long, default_value_t = false)]
     animate: bool,
-    ///Number of threads (GA only)
+    ///Number of threads (GA only), this is a bit of misnomer since its really how many groups the populations will be split into and then rayon deals with it
     #[arg( long, default_value_t = 1)]
     threads: u32,
+    
 }
 fn main() {
     let args = Args::parse();
@@ -162,7 +180,7 @@ fn main() {
     }
     pl2.shift_placement(0.0, 0.0);
     //for SA
-    let sa_pl = pl2.clone();
+    
     let test = args.test;
     let anim = args.animate;
     let sel_type = args.selection;
@@ -184,16 +202,6 @@ fn main() {
     } else {
         let _ = generate_animation(pl2);
     }
-    let clone_sa = sa_pl.clone();
-    let id2 = Individual::new(sa_pl);
-    let id3 = quick_sa(
-        id2,
-        log_cool,
-        (args.generations * args.population_size)
-            .try_into()
-            .unwrap(),
-        true,
-    );
 
-    id3.plot("test-sa.png", &clone_sa.net_map);
+    
 }

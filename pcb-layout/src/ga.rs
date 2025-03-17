@@ -443,8 +443,7 @@ pub fn genetic_algorithim(
 
         a_s.partial_cmp(&b_s).unwrap()
     });
-    let scores_for_debug :Vec<f64> = population.iter().map(|i| i.fitness).collect();
-    println!("{:?}",scores_for_debug );
+    
     let id = &mut population[0];
     if output {
         println!("New Score: {}", id.score());
