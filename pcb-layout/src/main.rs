@@ -123,27 +123,22 @@ fn tester(pl: Placement) {
     for i in &test_cases {
         genetic_algorithim(pl.clone(), i.0, i.1, true, elitist_selection, 1);
     }
-    for i in &test_cases{
+    for i in &test_cases {
         let clone_sa = pl.clone();
         let id2 = Individual::new(pl.clone());
-        let id3 = quick_sa(
-            id2,
-            log_cool,
-            (i.1 *100 )
-                .try_into()
-                .unwrap(),
-            true,
-        );
+        let id3 = quick_sa(id2, log_cool, (i.1 * 100).try_into().unwrap(), true);
 
-    id3.plot(&format!("tests/test-sa-{}.png", i.1 *100), &clone_sa.net_map);
+        id3.plot(
+            &format!("tests/test-sa-{}.png", i.1 * 100),
+            &clone_sa.net_map,
+        );
     }
-    
 }
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Name of the .kicad_pcb file to use. Use synthetic to use the generated toy case. 
+    /// Name of the .kicad_pcb file to use. Use synthetic to use the generated toy case.
     /// This probably will error on some boards. The parser was a bit of an afterthought and desperately needs more time
     #[arg(short, long, default_value_t = ("../arduino_kicad/arduino UNO.kicad_pcb").to_string() )]
     file: String,
@@ -164,9 +159,8 @@ struct Args {
     #[arg(short, long, default_value_t = false)]
     animate: bool,
     ///Number of threads (GA only), this is a bit of misnomer since its really how many groups the populations will be split into and then rayon deals with it
-    #[arg( long, default_value_t = 1)]
+    #[arg(long, default_value_t = 1)]
     threads: u32,
-    
 }
 fn main() {
     let args = Args::parse();
@@ -180,7 +174,7 @@ fn main() {
     }
     pl2.shift_placement(0.0, 0.0);
     //for SA
-    
+
     let test = args.test;
     let anim = args.animate;
     let sel_type = args.selection;
@@ -202,6 +196,4 @@ fn main() {
     } else {
         let _ = generate_animation(pl2);
     }
-
-    
 }

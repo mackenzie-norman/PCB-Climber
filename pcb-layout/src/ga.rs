@@ -428,7 +428,7 @@ pub fn genetic_algorithim(
             selection_algo(&mut pop.to_vec());
         });
         //CLONE IS EXPENSIVE?
-        
+
         if cur_generation % reset_num == 0 {
             selection_algo(&mut population);
             populations = population
@@ -443,7 +443,7 @@ pub fn genetic_algorithim(
 
         a_s.partial_cmp(&b_s).unwrap()
     });
-    
+
     let id = &mut population[0];
     if output {
         println!("New Score: {}", id.score());
