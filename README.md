@@ -23,18 +23,10 @@ I attempted to keep an engineering notebook in [little-notebook.md](little-noteb
 
 Now that I have plotting working, you can see the progress by looking at test-100x1000.png and [test.md](pcb-layout/test.md)
 
-![image of pcb placed by GA](pcb-layout/test-100x1000.png)
+![image of pcb placed by GA](pcb-layout/tests/test-100x1000.png)
 
 
-## Previous Work
 
-https://docs.rs/kicad_parse_gen/latest/kicad_parse_gen/layout/index.html
-https://github.com/racklet/kicad-rs/tree/main
-https://github.com/The-OpenROAD-Project/SA-PCB
-https://dspace.mit.edu/bitstream/handle/1721.1/139247/Crocker-pcrocker-meng-eecs-2021-thesis.pdf?sequence=1&isAllowed=y 
-
-
-https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6269973
 
 
 # Project Write-up
@@ -65,3 +57,12 @@ I do plan on keeping up with this project, if nothing else to improve my rust sk
 - output back to the kicad_file
 
 
+## Previous Work
+
+https://docs.rs/kicad_parse_gen/latest/kicad_parse_gen/layout/index.html
+https://github.com/racklet/kicad-rs/tree/main
+https://github.com/The-OpenROAD-Project/SA-PCB
+https://dspace.mit.edu/bitstream/handle/1721.1/139247/Crocker-pcrocker-meng-eecs-2021-thesis.pdf?sequence=1&isAllowed=y 
+
+
+https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=6269973

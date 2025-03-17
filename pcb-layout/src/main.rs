@@ -109,7 +109,7 @@ fn gen_synth_pl() -> Placement {
 fn tester(pl: Placement) {
     let pl_2 = pl.clone();
     let id2 = Individual::new(pl_2);
-    id2.plot("0.png", &pl.net_map);
+    id2.plot("tests/0.png", &pl.net_map);
     let gen_mult = 1;
     let test_cases: Vec<(u32, u32)> = vec![
         (10, 10000 * gen_mult),
@@ -121,7 +121,7 @@ fn tester(pl: Placement) {
     ];
 
     for i in &test_cases {
-        genetic_algorithim(pl.clone(), i.0, i.1, true, ev_selection, 1);
+        genetic_algorithim(pl.clone(), i.0, i.1, true, elitist_selection, 1);
     }
     for i in &test_cases{
         let clone_sa = pl.clone();
@@ -135,7 +135,7 @@ fn tester(pl: Placement) {
             true,
         );
 
-    id3.plot(&format!("test-sa-{}.png", i.1 *100), &clone_sa.net_map);
+    id3.plot(&format!("tests/test-sa-{}.png", i.1 *100), &clone_sa.net_map);
     }
     
 }

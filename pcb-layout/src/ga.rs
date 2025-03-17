@@ -456,7 +456,7 @@ pub fn genetic_algorithim(
         );
         println!("\n{}", "+++++++Test Over+++++++".to_string().green());
         id.plot(
-            &format!("test-{}x{}.png", pop_size, num_generations),
+            &format!("tests/test-{}x{}.png", pop_size, num_generations),
             &pl.net_map,
         );
     }
