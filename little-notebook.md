@@ -122,3 +122,8 @@ I also really want to play with traits but there is not much benefit for the ref
 
 
 
+
+# Project Status (4-29-2025)
+I added mst euclidean distance for net length, currently no slow down
+
+need to add better testing for debugging where overlaps come from.

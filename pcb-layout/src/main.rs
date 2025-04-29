@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 mod plcmnt;
-use plcmnt::{Bbox, Component, Pin, Placement};
+use plcmnt::{Bbox, Component, Pin, Placement, mst_euclidean_length};
 mod kicad_parse;
 use clap::Parser;
 use kicad_parse::parse_file;
@@ -172,9 +172,9 @@ fn main() {
     } else {
         pl2 = parse_file(&args.file);
     }
+    
     pl2.shift_placement(0.0, 0.0);
     //for SA
-
     let test = args.test;
     let anim = args.animate;
     let sel_type = args.selection;
@@ -196,4 +196,5 @@ fn main() {
     } else {
         let _ = generate_animation(pl2);
     }
+
 }

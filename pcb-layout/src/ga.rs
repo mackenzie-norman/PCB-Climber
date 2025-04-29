@@ -1,6 +1,6 @@
 use crate::plcmnt;
 use colored::Colorize;
-use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Placement};
+use plcmnt::{hpwl, is_valid, placement_area, Bbox, Component, Placement, mst_euclidean_length};
 use plotters::coord::types::RangedCoordf64;
 use plotters::prelude::*;
 use rand::distr::weighted::WeightedIndex;
@@ -174,7 +174,8 @@ impl Individual {
     /// Is a sum of placement area + hpwl + and no overlaps
     pub fn score(&mut self) -> f64 {
         self.fitness =
-            is_valid(&self.comp_list) + placement_area(&self.comp_list) + hpwl(&self.comp_list);
+            //placement_area(&self.comp_list) + 
+            is_valid(&self.comp_list) + mst_euclidean_length(&self.comp_list);
         self.fitness
     }
     /// Rotates a component ```a``` x degrees

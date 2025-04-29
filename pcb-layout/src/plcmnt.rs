@@ -1,8 +1,15 @@
+use petgraph::algo::min_spanning_tree::min_spanning_tree;
+use petgraph::data::FromElements;
 use plotters::prelude::LogScalable;
 use plotters::prelude::*;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, vec};
 use std::f64::consts::PI;
 
+fn euclidean_distance(coord1: (f64, f64), coord2: (f64, f64)) -> f64 {
+    let dx = coord1.0 - coord2.0;
+    let dy = coord1.1 - coord2.1;
+    (dx * dx + dy * dy).sqrt()
+}
 #[derive(Debug, Copy, Clone)]
 pub struct Bbox {
     pub x1: f64,
@@ -187,6 +194,57 @@ impl Component {
             pin.refdes = new_ref.clone();
         }
     }
+}
+use petgraph::{graph::UnGraph, graph::NodeIndex, };
+
+
+fn create_connected_graph(coords: &[(f64, f64)], max_distance: f64) -> UnGraph<(), f64> {
+    let mut graph = UnGraph::new_undirected();
+    let mut node_indices: Vec<NodeIndex> = Vec::new();
+
+    // Add nodes to the graph and store their indices
+    for (i, coord) in coords.iter().enumerate() {
+        let node_index = graph.add_node(());
+        node_indices.push(node_index);
+    }
+
+    // Add edges between nodes within the maximum distance
+    for i in 0..coords.len() {
+        for j in i + 1..coords.len() { 
+            let dist_weight =euclidean_distance(coords[i], coords[j]);
+            
+            graph.add_edge(node_indices[i], node_indices[j], dist_weight);
+            
+        }
+    }
+
+    graph
+}
+pub fn mst_euclidean_length(comps: &Vec<Component>) -> f64 {
+    let mut pin_by_node: BTreeMap<i32, Vec<&Pin>> = BTreeMap::new();
+    let mut total_wl: f64 = 0.0;
+    let ignore_gnd = true;
+    for i in comps {
+        for pin in &i.pins {
+            if ignore_gnd && pin.net != 11 {
+                if let std::collections::btree_map::Entry::Vacant(e) = pin_by_node.entry(pin.net) {
+                    e.insert(vec![pin]);
+                } else {
+                    let new_vec = pin_by_node.get_mut(&pin.net).unwrap();
+                    new_vec.push(pin);
+                    //pin_by_node.insert(pin.net, new_vec);
+                }
+            }
+        }
+    }
+    for pins in pin_by_node.values() {
+        
+        let points: Vec::<(f64, f64)> = pins.iter().map(|i|  i.bbox.get_center() ).collect();
+        let grph: petgraph::Graph<(), f64, petgraph::Undirected> = create_connected_graph(&points, 100000.0);
+        let mst_grph = UnGraph::<_, _>::from_elements( min_spanning_tree(&grph));
+        total_wl += mst_grph.edge_weights().sum::<f64>();
+    }
+    total_wl
 }
 ///Calculates the net by net hpwl
 /// Haven't looked at this since I wrote it. Definetely will need work
