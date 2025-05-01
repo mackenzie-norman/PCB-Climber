@@ -256,7 +256,7 @@ pub fn hpwl(comps: &Vec<Component>) -> f64 {
     let mut min_y = 100000.0;
     let mut pin_by_node: BTreeMap<i32, Vec<&Pin>> = BTreeMap::new();
     let mut total_wl = 0.0;
-    let ignore_gnd = false;
+    let ignore_gnd = true;
     for i in comps {
         for pin in &i.pins {
             if ignore_gnd && pin.net != 11 {

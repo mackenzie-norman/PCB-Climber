@@ -152,6 +152,8 @@ impl Individual {
             }
         } else {
             self.move_comp(b, old_b_loc.0, old_b_loc.1);
+            let a_comp = &mut (self.comp_list[a - 1]);
+            a_comp.move_to(old_a_loc.0, old_a_loc.1);
         }
         true
     }
