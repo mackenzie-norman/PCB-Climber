@@ -198,7 +198,7 @@ impl Component {
 use petgraph::{graph::UnGraph, graph::NodeIndex, };
 
 
-fn create_connected_graph(coords: &[(f64, f64)], max_distance: f64) -> UnGraph<(), f64> {
+fn create_connected_graph(coords: &[(f64, f64)] ) -> UnGraph<(), f64> {
     let mut graph = UnGraph::new_undirected();
     let mut node_indices: Vec<NodeIndex> = Vec::new();
 
@@ -240,7 +240,7 @@ pub fn mst_euclidean_length(comps: &Vec<Component>) -> f64 {
     for pins in pin_by_node.values() {
         
         let points: Vec::<(f64, f64)> = pins.iter().map(|i|  i.bbox.get_center() ).collect();
-        let grph: petgraph::Graph<(), f64, petgraph::Undirected> = create_connected_graph(&points, 100000.0);
+        let grph: petgraph::Graph<(), f64, petgraph::Undirected> = create_connected_graph(&points );
         let mst_grph = UnGraph::<_, _>::from_elements( min_spanning_tree(&grph));
         total_wl += mst_grph.edge_weights().sum::<f64>();
     }
@@ -256,7 +256,7 @@ pub fn hpwl(comps: &Vec<Component>) -> f64 {
     let mut min_y = 100000.0;
     let mut pin_by_node: BTreeMap<i32, Vec<&Pin>> = BTreeMap::new();
     let mut total_wl = 0.0;
-    let ignore_gnd = true;
+    let ignore_gnd = false;
     for i in comps {
         for pin in &i.pins {
             if ignore_gnd && pin.net != 11 {

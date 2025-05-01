@@ -264,7 +264,8 @@ impl Individual {
         //let mut rng = rand::rng();
         let a = rng.random_range(1..self.comp_list.len() + 1);
         let c = rng.random_range(1..4);
-        //let c = 2;
+        //TODO should add test 
+        //let c = ;
         match c {
             1 => {
                 let b = rng.random_range(1..self.comp_list.len() + 1);

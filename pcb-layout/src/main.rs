@@ -134,6 +134,16 @@ fn tester(pl: Placement) {
         );
     }
 }
+fn debugger(pl: Placement) {
+    let mut rng = rand::rng();
+    let mut i = Individual::new(pl.clone());
+    for _ in 1..10000{
+        i.mutate(& mut rng);
+    }
+
+    i.plot("debug.png",&pl.net_map );
+
+}
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
@@ -161,6 +171,9 @@ struct Args {
     ///Number of threads (GA only), this is a bit of misnomer since its really how many groups the populations will be split into and then rayon deals with it
     #[arg(long, default_value_t = 1)]
     threads: u32,
+
+    #[arg(short, long, default_value_t = false)]
+    debug: bool,
 }
 fn main() {
     let args = Args::parse();
@@ -185,14 +198,18 @@ fn main() {
     if test {
         tester(pl2);
     } else if !anim {
-        let _scores = genetic_algorithim(
-            pl2,
-            args.population_size,
-            args.generations,
-            true,
-            selection_algo,
-            args.threads,
-        );
+        if !args.debug{
+            let _scores = genetic_algorithim(
+                pl2,
+                args.population_size,
+                args.generations,
+                true,
+                selection_algo,
+                args.threads,
+            );
+        }else{
+            debugger(pl2);
+        }
     } else {
         let _ = generate_animation(pl2);
     }
