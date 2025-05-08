@@ -108,7 +108,7 @@ fn gen_synth_pl() -> Placement {
 ///
 fn tester(pl: Placement) {
     let pl_2 = pl.clone();
-    let id2 = Individual::new(pl_2);
+    let id2 = Individual::new(pl_2, vec![]);
     id2.plot("tests/0.png", &pl.net_map);
     let gen_mult = 1;
     let test_cases: Vec<(u32, u32)> = vec![
@@ -121,11 +121,11 @@ fn tester(pl: Placement) {
     ];
 
     for i in &test_cases {
-        genetic_algorithim(pl.clone(), i.0, i.1, true, elitist_selection, 1);
+        genetic_algorithim(pl.clone(), i.0, i.1, true, elitist_selection, vec![],1);
     }
     for i in &test_cases {
         let clone_sa = pl.clone();
-        let id2 = Individual::new(pl.clone());
+        let id2 = Individual::new(pl.clone(), vec![]);
         let id3 = quick_sa(id2, log_cool, (i.1 * 100).try_into().unwrap(), true);
 
         id3.plot(
@@ -136,7 +136,7 @@ fn tester(pl: Placement) {
 }
 fn debugger(pl: Placement) {
     let mut rng = rand::rng();
-    let mut i = Individual::new(pl.clone());
+    let mut i = Individual::new(pl.clone(), vec![]);
     for _ in 1..10000{
         i.mutate(& mut rng);
     }
@@ -199,12 +199,14 @@ fn main() {
         tester(pl2);
     } else if !anim {
         if !args.debug{
+            //println!("{:?}", pl2.components);
             let _scores = genetic_algorithim(
                 pl2,
                 args.population_size,
                 args.generations,
                 true,
                 selection_algo,
+                vec![],
                 args.threads,
             );
         }else{

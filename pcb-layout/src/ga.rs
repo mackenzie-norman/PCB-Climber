@@ -35,15 +35,20 @@ pub struct Individual {
     comp_list: Vec<Component>,
     pl_area: Bbox,
     fitness: f64,
+    fixed_comps: Vec<u32>,
 }
 
 impl Individual {
-    pub fn new(pl: Placement) -> Self {
+    pub fn new(pl: Placement, fixed_comps: Vec<String>) -> Self {
         let mut i = Individual {
             comp_list: pl.components,
             pl_area: pl.placement_area,
             fitness: 0.0,
+            fixed_comps: Vec::new(),
         };
+        
+        let fixed :Vec<u32> = fixed_comps.iter().map(|x| i.refdes_to_indx(x.to_string()) as u32).collect();
+        i.fixed_comps = fixed;
         i.score();
         i
     }
@@ -104,6 +109,9 @@ impl Individual {
     }
     /// Moves a comp, returns whether or not it could move it
     fn move_comp(&mut self, a: usize, x: f64, y: f64) -> bool {
+        if self.fixed_comps.contains(&(a as u32)){
+            return false;
+        }
         let a_comp = &mut (self.comp_list[a - 1]);
         let old_pos = (a_comp.bbox.x1, a_comp.bbox.y1);
         a_comp.move_to(x, y);
@@ -248,12 +256,14 @@ impl Individual {
             comp_list: other.comp_list.clone(),
             pl_area: self.pl_area,
             fitness: self.fitness,
+            fixed_comps: self.fixed_comps.clone(),
         };
 
         for comp in non_selected_comps {
             let comp_idx = child.refdes_to_indx(comp.refdes.clone());
             let could_move = child.move_comp(comp_idx, comp.bbox.x1, comp.bbox.y1);
             if !could_move {
+                //TODO this could result in overlap
                 //could_move =
                 child.move_to_new(comp_idx, rng);
             }
@@ -264,13 +274,14 @@ impl Individual {
     /// Total mutation function
     pub fn mutate(&mut self, rng: &mut ThreadRng) -> bool {
         //let mut rng = rand::rng();
-        let a = rng.random_range(1..self.comp_list.len() + 1);
+        let pickable_comps: Vec<usize> = (1..self.comp_list.len() +1).filter(|i| !self.fixed_comps.contains(&(*i as u32))).collect();
+        let a = *pickable_comps.choose(rng).unwrap();
         let c = rng.random_range(1..4);
         //TODO should add test 
         //let c = ;
         match c {
             1 => {
-                let b = rng.random_range(1..self.comp_list.len() + 1);
+                let b =  *pickable_comps.choose(rng).unwrap();
                 self.swap(a, b, rng)
             }
             2 => self.move_to_new(a, rng),
@@ -292,7 +303,7 @@ pub fn generate_animation(pl: Placement) -> Vec<String> {
     let pop_size = 100;
     for _ in 0..pop_size {
         let pl_2 = pl.clone();
-        let id2 = Individual::new(pl_2);
+        let id2 = Individual::new(pl_2, vec![]);
         population.push(id2);
     }
     for count in 0..frame_count {
@@ -368,6 +379,7 @@ pub fn genetic_algorithim(
     num_generations: u32,
     output: bool,
     selection_algo: fn(&mut Vec<Individual>) -> (),
+    fixed_refdes: Vec<String>,
     nthreads: u32,
 ) -> Vec<f64> {
     let mut population: Vec<Individual> = Vec::new();
@@ -375,7 +387,8 @@ pub fn genetic_algorithim(
     let scores: Vec<f64> = Vec::new();
     for _ in 0..pop_size {
         let pl_2 = pl.clone();
-        let id2 = Individual::new(pl_2);
+        let mut id2 = Individual::new(pl_2, fixed_refdes.clone());
+        id2.fixed_comps = vec![3];
         population.push(id2);
     }
     let id = &mut population[0];
