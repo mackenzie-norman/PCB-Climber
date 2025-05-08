@@ -174,6 +174,9 @@ struct Args {
 
     #[arg(short, long, default_value_t = false)]
     debug: bool,
+    
+    #[clap(short, long, value_parser, num_args = 0.., value_delimiter = ' ',)]
+    pub fixed: Vec<String>,
 }
 fn main() {
     let args = Args::parse();
@@ -206,7 +209,7 @@ fn main() {
                 args.generations,
                 true,
                 selection_algo,
-                vec![],
+                args.fixed,
                 args.threads,
             );
         }else{
