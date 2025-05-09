@@ -135,3 +135,7 @@ next step is adding support for fixed
 - Also maybe could add a speed up in crossover by skipping the fixed. 
 
 after that I should be able to make run some better benchmarks. Ideally I want to generate the kicad equivalent of placement.txt 
+
+# Project Status (5-1-2025)
+
+added fixed components, pretty naive right now but good to have. Think next step is place back to kicad. 

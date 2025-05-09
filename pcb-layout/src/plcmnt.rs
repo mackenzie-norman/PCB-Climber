@@ -4,6 +4,9 @@ use plotters::prelude::LogScalable;
 use plotters::prelude::*;
 use std::{collections::BTreeMap, vec};
 use std::f64::consts::PI;
+use std::fs::File;
+use std::io::{Write, BufWriter};
+use std::path::Path;
 
 fn euclidean_distance(coord1: (f64, f64), coord2: (f64, f64)) -> f64 {
     let dx = coord1.0 - coord2.0;
@@ -358,5 +361,22 @@ impl Placement {
             self.placement_area.x1 + delta_x,
             self.placement_area.y1 + delta_y,
         )
+    }
+    pub fn to_csv(&self, file_path: String) -> std::io::Result<()> {
+        let file = File::create(Path::new(&file_path))?;
+        let mut writer = BufWriter::new(file);
+
+        // Write headers
+        writeln!(writer, "refdes,x,y,rot")?;
+
+        // Write each component
+        for comp in &self.components {
+            let line = format!("\"{}\",{:.2},{:.2},{}", comp.refdes, comp.bbox.centerx.round(), comp.bbox.centery, comp.rotation);
+            writeln!(writer, "{}", line)?;
+        }
+
+        // Flush writer to ensure everything is written
+        writer.flush()?;
+        Ok(())
     }
 }

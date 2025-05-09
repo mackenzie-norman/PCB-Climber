@@ -189,7 +189,7 @@ fn main() {
         pl2 = parse_file(&args.file);
     }
     
-    pl2.shift_placement(0.0, 0.0);
+    //pl2.shift_placement(0.0, 0.0);
     //for SA
     let test = args.test;
     let anim = args.animate;

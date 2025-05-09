@@ -374,7 +374,7 @@ pub fn elitist_selection(population: &mut Vec<Individual>) {
 /// Reccomended values I don't know
 /// It should return a vec of scores so you can plot performance if you want
 pub fn genetic_algorithim(
-    pl: Placement,
+    mut pl: Placement,
     pop_size: u32,
     num_generations: u32,
     output: bool,
@@ -382,6 +382,7 @@ pub fn genetic_algorithim(
     fixed_refdes: Vec<String>,
     nthreads: u32,
 ) -> Vec<f64> {
+    let (offsetx,offsety) = pl.shift_placement(0.0, 0.0);
     let mut population: Vec<Individual> = Vec::new();
     //let mut children = vec![];
     let scores: Vec<f64> = Vec::new();
@@ -476,6 +477,10 @@ pub fn genetic_algorithim(
             &format!("tests/test-{}x{}.png", pop_size, num_generations),
             &pl.net_map,
         );
+        let mut pl2 = pl.clone();
+        pl2.components = id.comp_list.clone();
+        pl2.shift_placement(-1.0 * offsetx, -1.0 * offsety);
+        pl2.to_csv("output.csv".to_string());
     }
 
     scores
